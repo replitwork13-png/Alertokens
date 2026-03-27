@@ -126,6 +126,7 @@ export default function TokenDetails() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [testingCard, setTestingCard] = useState(false);
+  const [cardTestDone, setCardTestDone] = useState(false);
 
   useEffect(() => {
     if (token?.triggerUrl) {
@@ -155,7 +156,8 @@ export default function TokenDetails() {
     setTestingCard(true);
     try {
       await fetch(`${API_BASE}/tokens/${token.id}/test-trigger`, { method: "POST" });
-      window.location.reload();
+      setTestingCard(false);
+      setCardTestDone(true);
     } catch {
       setTestingCard(false);
     }
@@ -373,11 +375,11 @@ export default function TokenDetails() {
                 </div>
                 <div className="flex justify-between items-end">
                   <div>
-                    <div className="text-white/70 text-[10px]">Expires</div>
+                    <div className="text-white/70 text-[10px]">Действует до</div>
                     <div className="text-white font-mono text-sm">{cardData.cardExpiry}</div>
                   </div>
                   <div>
-                    <div className="text-white/70 text-[10px]">CVV</div>
+                    <div className="text-white/70 text-[10px]">Код</div>
                     <div className="text-white font-mono text-sm">{cardData.cardCvv}</div>
                   </div>
                 </div>
@@ -411,57 +413,96 @@ export default function TokenDetails() {
               ))}
             </div>
 
-            <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-5 space-y-4 shadow-md">
-              <div className="flex items-start justify-between">
-                <p className="text-sm text-muted-foreground leading-snug max-w-[220px]">
-                  Мы сгенерируем фейковую транзакцию, которая вызовет срабатывание тревоги для этого токена.
-                </p>
-                <button
-                  onClick={() => {}}
-                  className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shrink-0"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div>
-                <div className="text-sm font-semibold mb-1.5">Card Number</div>
-                <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
-                  <span className="font-mono text-sm tracking-wide flex-1">{cardData.cardNumber}</span>
-                  <span className="text-[10px] font-bold tracking-wider text-blue-500 uppercase">VISA</span>
-                  <div className="w-6 h-4 rounded-sm bg-gradient-to-br from-red-500 to-yellow-500 flex items-center justify-center">
-                    <div className="w-2.5 h-2.5 rounded-full border border-white/60" />
+            <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-5 shadow-md overflow-hidden relative">
+              {cardTestDone ? (
+                <div className="flex flex-col items-center text-center py-8 space-y-3 relative">
+                  <button
+                    onClick={() => { setCardTestDone(false); window.location.reload(); }}
+                    className="absolute top-0 right-0 w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="relative w-full h-32 overflow-hidden">
+                    {Array.from({ length: 40 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute text-primary animate-bounce"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 2}s`,
+                          animationDuration: `${1 + Math.random() * 2}s`,
+                          fontSize: `${8 + Math.random() * 14}px`,
+                          opacity: 0.5 + Math.random() * 0.5,
+                          transform: `rotate(${Math.random() * 360}deg)`,
+                        }}
+                      >
+                        {["$", "💵", "💰", "💸"][Math.floor(Math.random() * 4)]}
+                      </div>
+                    ))}
                   </div>
-                  <Copy className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary" onClick={() => copy(cardData.cardNumber, "Номер карты скопирован")} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-sm font-semibold mb-1.5">Expiration date</div>
-                  <div className="bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
-                    <span className="font-mono text-sm">{cardData.cardExpiry}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">💸</span>
+                    <h3 className="text-xl font-bold">Оплата получена!</h3>
                   </div>
+                  <p className="text-muted-foreground text-sm">
+                    Вы скоро получите уведомление, если ещё не получили.
+                  </p>
                 </div>
-                <div>
-                  <div className="text-sm font-semibold mb-1.5">Security code</div>
-                  <div className="bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
-                    <span className="font-mono text-sm">{cardData.cardCvv}</span>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <p className="text-sm text-muted-foreground leading-snug max-w-[220px]">
+                      Мы сгенерируем фейковую транзакцию, которая вызовет срабатывание тревоги для этого токена.
+                    </p>
+                    <button
+                      onClick={() => {}}
+                      className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                </div>
-              </div>
 
-              <Button
-                onClick={handleTestCard}
-                disabled={testingCard}
-                className="w-full gap-2 bg-[#1a1a2e] hover:bg-[#16162a] text-white font-semibold py-6 text-base rounded-xl"
-              >
-                {testingCard ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Обработка…</>
-                ) : (
-                  "Pay $100.00"
-                )}
-              </Button>
+                  <div>
+                    <div className="text-sm font-semibold mb-1.5">Номер карты</div>
+                    <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
+                      <span className="font-mono text-sm tracking-wide flex-1">{cardData.cardNumber}</span>
+                      <span className="text-[10px] font-bold tracking-wider text-blue-500 uppercase">VISA</span>
+                      <div className="w-6 h-4 rounded-sm bg-gradient-to-br from-red-500 to-yellow-500 flex items-center justify-center">
+                        <div className="w-2.5 h-2.5 rounded-full border border-white/60" />
+                      </div>
+                      <Copy className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary" onClick={() => copy(cardData.cardNumber, "Номер карты скопирован")} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-sm font-semibold mb-1.5">Срок действия</div>
+                      <div className="bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
+                        <span className="font-mono text-sm">{cardData.cardExpiry}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold mb-1.5">Код безопасности</div>
+                      <div className="bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
+                        <span className="font-mono text-sm">{cardData.cardCvv}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleTestCard}
+                    disabled={testingCard}
+                    className="w-full gap-2 bg-[#1a1a2e] hover:bg-[#16162a] text-white font-semibold py-6 text-base rounded-xl"
+                  >
+                    {testingCard ? (
+                      <><Loader2 className="w-5 h-5 animate-spin" /> Обработка…</>
+                    ) : (
+                      "Оплатить $100.00"
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="bg-sky-500/10 border border-sky-400/20 rounded-2xl p-5 text-sm text-muted-foreground max-w-sm flex gap-3">
