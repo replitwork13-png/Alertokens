@@ -2,7 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useGetToken, useListTokenAlerts, useDeleteToken } from "@workspace/api-client-react";
 import type { GeoData } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
-import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon, CreditCard, Lock, Calendar, User, Loader2, ExternalLink } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon, CreditCard, Lock, Calendar, User, Loader2, ExternalLink, FileText } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useCopy } from "@/hooks/use-copy";
@@ -146,6 +146,7 @@ export default function TokenDetails() {
   const isImageType = token.type === "image";
   const isCreditCard = token.type === "credit_card";
   const isRedirect = token.type === "redirect";
+  const isPdf = token.type === "pdf";
   const API_BASE = import.meta.env.VITE_API_URL || "/api";
   const imagePreviewUrl = isImageType ? `${API_BASE}/tokens/${token.id}/image` : null;
   const cardData = token.cardData as { cardName: string; cardNumber: string; cardExpiry: string; cardCvv: string; cardBrand: string } | null;
@@ -242,6 +243,39 @@ export default function TokenDetails() {
           </p>
         </CardContent>
       </Card>
+
+      {/* PDF Download */}
+      {isPdf && (
+        <Card className="border-primary/30 shadow-lg">
+          <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+            <div className="bg-red-500/20 p-3 rounded-full">
+              <FileText className="w-8 h-8 text-red-500" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">PDF-ловушка активна!</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                Скачайте PDF и разместите его там, где хотите обнаружить доступ. При открытии в Adobe Reader токен сработает.
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                const a = document.createElement("a");
+                a.href = `${API_BASE}/tokens/${token.id}/download-pdf`;
+                a.download = "";
+                a.click();
+              }}
+              className="gap-2 bg-red-600 hover:bg-red-700 text-white"
+              size="lg"
+            >
+              <Download className="w-5 h-5" />
+              Скачать PDF-файл
+            </Button>
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-sm text-muted-foreground max-w-sm">
+              <p>Документ можно переименовать — это не повлияет на работу ловушки. Трекер внутри файла отправит запрос при каждом открытии.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Redirect Info */}
       {isRedirect && token.redirectUrl && (

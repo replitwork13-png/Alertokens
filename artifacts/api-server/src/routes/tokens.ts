@@ -6,6 +6,7 @@ import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const UPLOADS_DIR = path.resolve(import.meta.dirname, "../../uploads");
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -235,6 +236,106 @@ router.post("/:tokenId/test-trigger", async (req: Request, res: Response) => {
   } catch (err) {
     req.log.error({ err }, "Error test triggering");
     res.status(500).json({ error: "internal_error", message: "Failed to test trigger" });
+  }
+});
+
+router.get("/:tokenId/download-pdf", async (req: Request, res: Response) => {
+  try {
+    const tokenId = req.params.tokenId;
+    const token = await db.select().from(tokensTable).where(eq(tokensTable.id, tokenId)).limit(1);
+    if (!token.length) {
+      res.status(404).json({ error: "not_found", message: "Token not found" });
+      return;
+    }
+
+    const t = token[0];
+    if (t.type !== "pdf") {
+      res.status(400).json({ error: "invalid_type", message: "Token is not a PDF token" });
+      return;
+    }
+
+    const triggerUrl = buildTriggerUrl(t.token, req);
+
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const page = pdfDoc.addPage([595, 842]);
+    const { width, height } = page.getSize();
+
+    page.drawText("CONFIDENTIAL", {
+      x: 50,
+      y: height - 80,
+      size: 28,
+      font: fontBold,
+      color: rgb(0.2, 0.2, 0.2),
+    });
+
+    page.drawLine({
+      start: { x: 50, y: height - 95 },
+      end: { x: width - 50, y: height - 95 },
+      thickness: 2,
+      color: rgb(0.8, 0.1, 0.1),
+    });
+
+    function toAscii(s: string): string {
+      return s.replace(/[^\x20-\x7E]/g, "?");
+    }
+
+    const lines = [
+      `Document: ${toAscii(t.name)}`,
+      `Created: ${t.createdAt.toISOString().split("T")[0]}`,
+      "",
+      toAscii(t.memo) || "This document contains sensitive information.",
+      "",
+      "This document is protected by CanaryTokens tracking.",
+      "Any unauthorized access will be detected and logged.",
+    ];
+
+    let yPos = height - 140;
+    for (const line of lines) {
+      page.drawText(line, {
+        x: 50,
+        y: yPos,
+        size: 12,
+        font,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      yPos -= 22;
+    }
+
+    // Embed a 1x1 tracking annotation that phones home when opened in Adobe Reader
+    // This uses an OpenAction URI annotation approach
+    const annot = pdfDoc.context.obj({
+      Type: "Annot",
+      Subtype: "Link",
+      Rect: [0, 0, 1, 1],
+      Border: [0, 0, 0],
+      A: {
+        S: "URI",
+        URI: triggerUrl,
+      },
+    });
+    const annotRef = pdfDoc.context.register(annot);
+    page.node.set(pdfDoc.context.obj("Annots" as any), pdfDoc.context.obj([annotRef]));
+
+    // Also set OpenAction to fetch the URL when the PDF is opened
+    const openAction = pdfDoc.context.obj({
+      S: "URI",
+      URI: triggerUrl,
+    });
+    pdfDoc.catalog.set(pdfDoc.context.obj("OpenAction" as any), openAction);
+
+    const pdfBytes = await pdfDoc.save();
+
+    const safeName = t.name.replace(/[^a-zA-Z0-9_-]/g, "_") || "canarytoken";
+    const filename = `${safeName}.pdf`;
+    res.set("Content-Type", "application/pdf");
+    res.set("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    req.log.error({ err }, "Error generating PDF");
+    res.status(500).json({ error: "internal_error", message: "Failed to generate PDF" });
   }
 });
 
