@@ -1,12 +1,14 @@
 import { useRoute, useLocation } from "wouter";
 import { useGetToken, useListTokenAlerts, useDeleteToken } from "@workspace/api-client-react";
+import type { GeoData } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
-import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useCopy } from "@/hooks/use-copy";
 import { Link } from "wouter";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const TOKEN_TYPE_LABELS: Record<string, string> = {
   web: "Веб",
@@ -17,6 +19,89 @@ const TOKEN_TYPE_LABELS: Record<string, string> = {
   qr_code: "QR-код",
   image: "Изображение",
 };
+
+function GeoInfoBlock({ geoData }: { geoData: GeoData }) {
+  return (
+    <div className="mt-3 space-y-3">
+      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-1">
+        Геолокация
+      </div>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
+        {geoData.city && (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Город</div>
+            <div className="font-medium text-foreground">{geoData.city}</div>
+          </div>
+        )}
+        {geoData.regionName && (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Регион</div>
+            <div className="font-medium text-foreground">{geoData.regionName}</div>
+          </div>
+        )}
+        {geoData.country && (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Страна</div>
+            <div className="font-medium text-foreground flex items-center gap-1.5">
+              {geoData.countryCode && (
+                <span className="text-base" title={geoData.country}>
+                  {geoData.countryCode}
+                </span>
+              )}
+              {geoData.country}
+            </div>
+          </div>
+        )}
+        {geoData.zip && (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Индекс</div>
+            <div className="font-medium text-foreground">{geoData.zip}</div>
+          </div>
+        )}
+        {geoData.timezone && (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Таймзона</div>
+            <div className="font-medium text-foreground">{geoData.timezone}</div>
+          </div>
+        )}
+        {geoData.lat !== undefined && geoData.lon !== undefined && (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Координаты</div>
+            <div className="font-mono text-foreground text-xs">{geoData.lat.toFixed(4)}, {geoData.lon.toFixed(4)}</div>
+          </div>
+        )}
+      </div>
+
+      {(geoData.org || geoData.isp || geoData.as || geoData.asname) && (
+        <div className="mt-2">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-1 mb-2.5">
+            ASN / Провайдер
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
+            {geoData.as && (
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">ASN</div>
+                <div className="font-mono text-foreground text-xs">{geoData.as.split(" ")[0]}</div>
+              </div>
+            )}
+            {(geoData.asname || geoData.org) && (
+              <div className="col-span-2">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Организация</div>
+                <div className="font-medium text-foreground">{geoData.org || geoData.asname}</div>
+              </div>
+            )}
+            {geoData.isp && geoData.isp !== geoData.org && (
+              <div className="col-span-2">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Провайдер</div>
+                <div className="font-medium text-foreground">{geoData.isp}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function TokenDetails() {
   const [, params] = useRoute("/token/:id");
@@ -135,36 +220,85 @@ export default function TokenDetails() {
         ) : (
           <div className="space-y-4">
             {alertsData?.alerts?.map((alert) => (
-              <Card key={alert.id} className="border-l-4 border-l-destructive shadow-md hover:translate-x-1 transition-transform">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row gap-4 justify-between">
-                    <div className="space-y-3 flex-1">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="destructive" className="font-mono">{format(parseISO(alert.triggeredAt), "HH:mm:ss")}</Badge>
-                        <span className="text-sm text-muted-foreground">{format(parseISO(alert.triggeredAt), "d MMM yyyy", { locale: ru })}</span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <div className="text-muted-foreground text-xs uppercase tracking-wider mb-1 flex items-center gap-1"><Monitor className="w-3 h-3" /> IP-адрес</div>
-                          <div className="font-mono text-foreground bg-black/30 px-2 py-1 rounded inline-block">{alert.ipAddress || "Неизвестен"}</div>
-                        </div>
-                        {alert.geo && (
-                          <div>
-                            <div className="text-muted-foreground text-xs uppercase tracking-wider mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> Местоположение</div>
-                            <div className="text-foreground">{alert.geo}</div>
-                          </div>
-                        )}
-                      </div>
-
-                      {alert.userAgent && (
-                        <div>
-                          <div className="text-muted-foreground text-xs uppercase tracking-wider mb-1">User-Agent</div>
-                          <div className="text-xs text-muted-foreground font-mono bg-black/20 p-2 rounded break-all">{alert.userAgent}</div>
-                        </div>
-                      )}
-                    </div>
+              <Card key={alert.id} className="border-l-4 border-l-destructive shadow-md">
+                <CardContent className="p-4 sm:p-6 space-y-4">
+                  {/* Time & IP header */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge variant="destructive" className="font-mono text-sm px-2.5 py-1">
+                      {format(parseISO(alert.triggeredAt), "HH:mm:ss")}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <CalendarClock className="w-3.5 h-3.5" />
+                      {format(parseISO(alert.triggeredAt), "d MMMM yyyy", { locale: ru })}
+                    </span>
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Source IP */}
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1">
+                        <Monitor className="w-3 h-3" /> IP-адрес источника
+                      </div>
+                      <div className={cn(
+                        "font-mono text-sm px-3 py-1.5 rounded border inline-block",
+                        alert.ipAddress
+                          ? "bg-destructive/10 border-destructive/20 text-destructive"
+                          : "bg-secondary/50 border-border text-muted-foreground"
+                      )}>
+                        {alert.ipAddress || "Неизвестен"}
+                      </div>
+                    </div>
+
+                    {/* Referer */}
+                    {alert.referer && (
+                      <div>
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1">
+                          <Globe className="w-3 h-3" /> Источник запроса
+                        </div>
+                        <div className="text-sm text-foreground font-mono bg-secondary/30 px-2 py-1 rounded break-all">
+                          {alert.referer}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Query Params */}
+                  {alert.queryParams && (() => {
+                    try {
+                      const params = JSON.parse(alert.queryParams);
+                      const entries = Object.entries(params);
+                      if (entries.length === 0) return null;
+                      return (
+                        <div>
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Параметры запроса</div>
+                          <div className="space-y-1">
+                            {entries.map(([k, v]) => (
+                              <div key={k} className="flex gap-2 font-mono text-xs">
+                                <span className="text-primary">{k}</span>
+                                <span className="text-muted-foreground">=</span>
+                                <span className="text-foreground">{String(v)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    } catch { return null; }
+                  })()}
+
+                  {/* Geo data */}
+                  {alert.geoData && <GeoInfoBlock geoData={alert.geoData} />}
+
+                  {/* User Agent */}
+                  {alert.userAgent && (
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1">
+                        <Building2 className="w-3 h-3" /> User-Agent
+                      </div>
+                      <div className="text-xs text-muted-foreground font-mono bg-black/20 p-2 rounded break-all border border-border/30">
+                        {alert.userAgent}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}

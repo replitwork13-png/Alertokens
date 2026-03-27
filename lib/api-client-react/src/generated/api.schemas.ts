@@ -49,6 +49,23 @@ export interface TokenListResponse {
   limit: number;
 }
 
+export interface GeoData {
+  country?: string;
+  countryCode?: string;
+  region?: string;
+  regionName?: string;
+  city?: string;
+  zip?: string;
+  lat?: number;
+  lon?: number;
+  timezone?: string;
+  isp?: string;
+  org?: string;
+  as?: string;
+  asname?: string;
+  query?: string;
+}
+
 export interface Alert {
   id: string;
   tokenId: string;
@@ -56,6 +73,8 @@ export interface Alert {
   userAgent?: string | null;
   referer?: string | null;
   geo?: string | null;
+  geoData?: GeoData | null;
+  queryParams?: string | null;
   triggeredAt: string;
 }
 

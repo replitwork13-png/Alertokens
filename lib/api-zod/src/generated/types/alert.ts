@@ -5,6 +5,7 @@
  * Canarytokens API
  * OpenAPI spec version: 0.1.0
  */
+import type { GeoData } from "./geoData";
 
 export interface Alert {
   id: string;
@@ -13,5 +14,7 @@ export interface Alert {
   userAgent?: string | null;
   referer?: string | null;
   geo?: string | null;
+  geoData?: GeoData | null;
+  queryParams?: string | null;
   triggeredAt: Date;
 }

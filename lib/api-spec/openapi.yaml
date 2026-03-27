@@ -280,6 +280,39 @@ components:
         - page
         - limit
 
+    GeoData:
+      type: object
+      nullable: true
+      properties:
+        country:
+          type: string
+        countryCode:
+          type: string
+        region:
+          type: string
+        regionName:
+          type: string
+        city:
+          type: string
+        zip:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        timezone:
+          type: string
+        isp:
+          type: string
+        org:
+          type: string
+        as:
+          type: string
+        asname:
+          type: string
+        query:
+          type: string
+
     Alert:
       type: object
       properties:
@@ -297,6 +330,11 @@ components:
           type: string
           nullable: true
         geo:
+          type: string
+          nullable: true
+        geoData:
+          $ref: "#/components/schemas/GeoData"
+        queryParams:
           type: string
           nullable: true
         triggeredAt:

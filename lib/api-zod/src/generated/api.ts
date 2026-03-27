@@ -99,6 +99,38 @@ export const DeleteTokenResponse = zod.object({
 });
 
 /**
+ * Geo data from IP lookup
+ */
+export const GeoDataSchema = zod.object({
+  country: zod.string().optional(),
+  countryCode: zod.string().optional(),
+  region: zod.string().optional(),
+  regionName: zod.string().optional(),
+  city: zod.string().optional(),
+  zip: zod.string().optional(),
+  lat: zod.number().optional(),
+  lon: zod.number().optional(),
+  timezone: zod.string().optional(),
+  isp: zod.string().optional(),
+  org: zod.string().optional(),
+  as: zod.string().optional(),
+  asname: zod.string().optional(),
+  query: zod.string().optional(),
+}).nullable();
+
+export const AlertSchema = zod.object({
+  id: zod.string(),
+  tokenId: zod.string(),
+  ipAddress: zod.string().nullish(),
+  userAgent: zod.string().nullish(),
+  referer: zod.string().nullish(),
+  geo: zod.string().nullish(),
+  geoData: GeoDataSchema.nullish(),
+  queryParams: zod.string().nullish(),
+  triggeredAt: zod.date(),
+});
+
+/**
  * @summary List alerts for a token
  */
 export const ListTokenAlertsParams = zod.object({
@@ -114,17 +146,7 @@ export const ListTokenAlertsQueryParams = zod.object({
 });
 
 export const ListTokenAlertsResponse = zod.object({
-  alerts: zod.array(
-    zod.object({
-      id: zod.string(),
-      tokenId: zod.string(),
-      ipAddress: zod.string().nullish(),
-      userAgent: zod.string().nullish(),
-      referer: zod.string().nullish(),
-      geo: zod.string().nullish(),
-      triggeredAt: zod.date(),
-    }),
-  ),
+  alerts: zod.array(AlertSchema),
   total: zod.number(),
   page: zod.number(),
   limit: zod.number(),
@@ -148,15 +170,5 @@ export const GetStatsResponse = zod.object({
   totalTokens: zod.number(),
   triggeredTokens: zod.number(),
   totalAlerts: zod.number(),
-  recentAlerts: zod.array(
-    zod.object({
-      id: zod.string(),
-      tokenId: zod.string(),
-      ipAddress: zod.string().nullish(),
-      userAgent: zod.string().nullish(),
-      referer: zod.string().nullish(),
-      geo: zod.string().nullish(),
-      triggeredAt: zod.date(),
-    }),
-  ),
+  recentAlerts: zod.array(AlertSchema),
 });

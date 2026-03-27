@@ -7,6 +7,7 @@
  */
 
 export * from "./alert";
+export * from "./geoData";
 export * from "./alertListResponse";
 export * from "./createTokenRequest";
 export * from "./errorResponse";

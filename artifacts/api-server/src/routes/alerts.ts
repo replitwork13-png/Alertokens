@@ -36,6 +36,8 @@ router.get("/", async (req: Request, res: Response) => {
       userAgent: a.userAgent,
       referer: a.referer,
       geo: a.geo,
+      geoData: a.geoData ?? null,
+      queryParams: a.queryParams ?? null,
       triggeredAt: a.triggeredAt.toISOString(),
     }));
 
