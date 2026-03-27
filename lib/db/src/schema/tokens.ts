@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, integer, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, integer, timestamp, pgEnum, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -10,6 +10,7 @@ export const tokenTypeEnum = pgEnum("token_type", [
   "word",
   "qr_code",
   "image",
+  "credit_card",
 ]);
 
 export const tokensTable = pgTable("tokens", {
@@ -21,6 +22,7 @@ export const tokensTable = pgTable("tokens", {
   alertEmail: text("alert_email"),
   imagePath: text("image_path"),
   imageMime: text("image_mime"),
+  cardData: jsonb("card_data"),
   triggered: boolean("triggered").notNull().default(false),
   triggerCount: integer("trigger_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),

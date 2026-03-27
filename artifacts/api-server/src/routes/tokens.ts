@@ -35,6 +35,43 @@ function generateId(): string {
   return crypto.randomUUID();
 }
 
+function generateCardNumber(): string {
+  const prefix = "4367";
+  const digits = [prefix];
+  for (let i = 0; i < 11; i++) {
+    digits.push(String(Math.floor(Math.random() * 10)));
+  }
+  const partial = digits.join("");
+  let sum = 0;
+  let alt = true;
+  for (let i = partial.length - 1; i >= 0; i--) {
+    let n = parseInt(partial[i], 10);
+    if (alt) { n *= 2; if (n > 9) n -= 9; }
+    sum += n;
+    alt = !alt;
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return partial + checkDigit;
+}
+
+function formatCardNumber(num: string): string {
+  return num.replace(/(.{4})/g, "$1 ").trim();
+}
+
+function generateCardData(tokenName: string) {
+  const cardNumber = generateCardNumber();
+  const expMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, "0");
+  const expYear = String(new Date().getFullYear() + Math.floor(Math.random() * 4) + 2);
+  const cvv = String(Math.floor(Math.random() * 900) + 100);
+  return {
+    cardName: tokenName || "CanaryToken",
+    cardNumber: formatCardNumber(cardNumber),
+    cardExpiry: `${expMonth}/${expYear}`,
+    cardCvv: cvv,
+    cardBrand: "VISA",
+  };
+}
+
 function buildTriggerUrl(token: string, req: Request): string {
   // Use REPLIT_DOMAINS env var if available (most reliable in Replit environment)
   const replitDomain = process.env.REPLIT_DOMAINS?.split(",")[0]?.trim();
@@ -92,9 +129,11 @@ router.post("/", async (req: Request, res: Response) => {
     const id = generateId();
     const token = generateToken();
 
+    const cardData = type === "credit_card" ? generateCardData(name) : null;
+
     const [created] = await db
       .insert(tokensTable)
-      .values({ id, type, name, memo, token, alertEmail: alertEmail ?? null })
+      .values({ id, type, name, memo, token, alertEmail: alertEmail ?? null, cardData })
       .returning();
 
     res.status(201).json({
@@ -105,6 +144,7 @@ router.post("/", async (req: Request, res: Response) => {
       token: created.token,
       triggerUrl: buildTriggerUrl(created.token, req),
       alertEmail: created.alertEmail,
+      cardData: created.cardData,
       triggered: created.triggered,
       triggerCount: created.triggerCount,
       createdAt: created.createdAt.toISOString(),
@@ -139,6 +179,7 @@ router.get("/:tokenId", async (req: Request, res: Response) => {
       token: t.token,
       triggerUrl: buildTriggerUrl(t.token, req),
       alertEmail: t.alertEmail,
+      cardData: t.cardData,
       triggered: t.triggered,
       triggerCount: t.triggerCount,
       createdAt: t.createdAt.toISOString(),
@@ -147,6 +188,46 @@ router.get("/:tokenId", async (req: Request, res: Response) => {
   } catch (err) {
     req.log.error({ err }, "Error getting token");
     res.status(500).json({ error: "internal_error", message: "Failed to get token" });
+  }
+});
+
+router.post("/:tokenId/test-trigger", async (req: Request, res: Response) => {
+  try {
+    const tokenId = req.params.tokenId;
+    const token = await db.select().from(tokensTable).where(eq(tokensTable.id, tokenId)).limit(1);
+    if (!token.length) {
+      res.status(404).json({ error: "not_found", message: "Token not found" });
+      return;
+    }
+
+    const t = token[0];
+    const alertId = crypto.randomUUID();
+    const triggeredAt = new Date();
+
+    await Promise.all([
+      db.insert(alertsTable).values({
+        id: alertId,
+        tokenId: t.id,
+        ipAddress: "TEST",
+        userAgent: "CanaryTokens Test Trigger",
+        referer: null,
+        geo: "Тестовое срабатывание",
+        geoData: null,
+        queryParams: null,
+      }),
+      db.update(tokensTable)
+        .set({
+          triggered: true,
+          triggerCount: t.triggerCount + 1,
+          lastTriggeredAt: triggeredAt,
+        })
+        .where(eq(tokensTable.id, t.id)),
+    ]);
+
+    res.json({ success: true, message: "Test trigger recorded" });
+  } catch (err) {
+    req.log.error({ err }, "Error test triggering");
+    res.status(500).json({ error: "internal_error", message: "Failed to test trigger" });
   }
 });
 

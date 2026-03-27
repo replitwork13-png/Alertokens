@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useCreateToken } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Button } from "@/components/ui-components";
-import { ShieldAlert, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, Loader2, Upload, X } from "lucide-react";
+import { ShieldAlert, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, Loader2, Upload, X, CreditCard } from "lucide-react";
 import { TokenType } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ const TOKEN_TYPES = [
   { id: TokenType.word, name: "Word-документ", icon: FileText, desc: "Срабатывает при открытии файла." },
   { id: TokenType.qr_code, name: "QR-код", icon: QrCode, desc: "Срабатывает при сканировании." },
   { id: TokenType.image, name: "Изображение", icon: ImageIcon, desc: "Встроите своё изображение с трекером." },
+  { id: TokenType.credit_card, name: "Кредитная карта", icon: CreditCard, desc: "Фейковая карта — ловушка для воров." },
 ];
 
 export default function CreateToken() {

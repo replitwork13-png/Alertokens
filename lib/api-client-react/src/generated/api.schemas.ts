@@ -19,7 +19,16 @@ export const TokenType = {
   word: "word",
   qr_code: "qr_code",
   image: "image",
+  credit_card: "credit_card",
 } as const;
+
+export interface CardData {
+  cardName: string;
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvv: string;
+  cardBrand: string;
+}
 
 export interface Token {
   id: string;
@@ -29,6 +38,7 @@ export interface Token {
   token: string;
   triggerUrl: string;
   alertEmail?: string | null;
+  cardData?: CardData | null;
   triggered: boolean;
   triggerCount: number;
   createdAt: string;

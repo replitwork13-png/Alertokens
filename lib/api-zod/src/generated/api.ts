@@ -59,7 +59,7 @@ export const ListTokensResponse = zod.object({
  * @summary Create a new canary token
  */
 export const CreateTokenBody = zod.object({
-  type: zod.enum(["web", "dns", "email", "pdf", "word", "qr_code", "image"]),
+  type: zod.enum(["web", "dns", "email", "pdf", "word", "qr_code", "image", "credit_card"]),
   name: zod.string(),
   memo: zod.string(),
   alertEmail: zod.string().nullish(),
@@ -74,7 +74,7 @@ export const GetTokenParams = zod.object({
 
 export const GetTokenResponse = zod.object({
   id: zod.string(),
-  type: zod.enum(["web", "dns", "email", "pdf", "word", "qr_code", "image"]),
+  type: zod.enum(["web", "dns", "email", "pdf", "word", "qr_code", "image", "credit_card"]),
   name: zod.string(),
   memo: zod.string(),
   token: zod.string(),

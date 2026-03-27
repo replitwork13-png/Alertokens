@@ -61,7 +61,8 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
   - `health.ts` — `GET /api/healthz`
   - `tokens.ts` — CRUD for canary tokens
   - `alerts.ts` — list alerts for a token
-  - `trigger.ts` — `GET /api/trigger/:token` — records trigger + returns 1x1 pixel PNG
+  - `trigger.ts` — `GET /api/trigger/:token` — records trigger + returns uploaded image (for image tokens) or 1x1 pixel PNG
+  - Tokens endpoints also include: `POST /:tokenId/upload-image` (image upload), `GET /:tokenId/image` (serve uploaded image), `POST /:tokenId/test-trigger` (manual test trigger for credit card tokens)
   - `stats.ts` — `GET /api/stats` — overall dashboard stats
 - Depends on: `@workspace/db`, `@workspace/api-zod`
 
@@ -72,7 +73,7 @@ React + Vite frontend for the Canarytokens app. Dark security-themed UI.
 - Pages: Dashboard (command center), Create Token, Token Details
 - Uses React Query hooks from `@workspace/api-client-react`
 - Dark mode green-accented security terminal aesthetic
-- Supports token types: web, dns, email, pdf, word, qr_code, image
+- Supports token types: web, dns, email, pdf, word, qr_code, image, credit_card
 
 ### `lib/db` (`@workspace/db`)
 

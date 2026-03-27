@@ -2,7 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useGetToken, useListTokenAlerts, useDeleteToken } from "@workspace/api-client-react";
 import type { GeoData } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
-import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon, CreditCard, Lock, Calendar, User, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useCopy } from "@/hooks/use-copy";
@@ -19,6 +19,7 @@ const TOKEN_TYPE_LABELS: Record<string, string> = {
   word: "Word",
   qr_code: "QR-код",
   image: "Изображение",
+  credit_card: "Кредитная карта",
 };
 
 function GeoInfoBlock({ geoData }: { geoData: GeoData }) {
@@ -123,6 +124,7 @@ export default function TokenDetails() {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [testingCard, setTestingCard] = useState(false);
 
   useEffect(() => {
     if (token?.triggerUrl) {
@@ -141,8 +143,20 @@ export default function TokenDetails() {
   const fullUrl = token.triggerUrl;
   const isQrType = token.type === "qr_code";
   const isImageType = token.type === "image";
+  const isCreditCard = token.type === "credit_card";
   const API_BASE = import.meta.env.VITE_API_URL || "/api";
   const imagePreviewUrl = isImageType ? `${API_BASE}/tokens/${token.id}/image` : null;
+  const cardData = token.cardData as { cardName: string; cardNumber: string; cardExpiry: string; cardCvv: string; cardBrand: string } | null;
+
+  const handleTestCard = async () => {
+    setTestingCard(true);
+    try {
+      await fetch(`${API_BASE}/tokens/${token.id}/test-trigger`, { method: "POST" });
+      window.location.reload();
+    } catch {
+      setTestingCard(false);
+    }
+  };
 
   const downloadQr = () => {
     if (!qrDataUrl) return;
@@ -251,6 +265,97 @@ export default function TokenDetails() {
               <p>Используйте URL ловушки как <code className="text-primary">src</code> изображения на сайте, в email или документе.</p>
               <p>Пример: <code className="text-primary/80 text-[11px]">&lt;img src="{fullUrl}"&gt;</code></p>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Credit Card */}
+      {isCreditCard && cardData && (
+        <Card className="border-primary/30 shadow-lg">
+          <CardContent className="pt-6 flex flex-col items-center text-center space-y-5">
+            <div className="bg-primary/20 p-3 rounded-full">
+              <CreditCard className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Кредитная карта-ловушка активна!</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                Разместите эти данные в файлах, базах данных или документах. Если кто-то попытается использовать карту — вы получите уведомление.
+              </p>
+            </div>
+
+            <div className="w-full max-w-sm rounded-2xl p-6 relative overflow-hidden" style={{
+              background: "linear-gradient(135deg, #0a3d2e 0%, #10b981 50%, #059669 100%)"
+            }}>
+              <div className="absolute inset-0 opacity-10" style={{
+                backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)"
+              }} />
+              <div className="relative z-10 text-left space-y-4">
+                <div className="flex justify-between items-start">
+                  <div className="text-white/60 text-[10px] uppercase tracking-widest font-bold">CanaryToken</div>
+                  <div className="text-white font-bold text-lg tracking-wider">{cardData.cardBrand}</div>
+                </div>
+                <div className="pt-2">
+                  <div className="text-white/70 text-[10px] mb-1">Владелец</div>
+                  <div className="text-white font-mono text-sm tracking-wide">{cardData.cardName}</div>
+                </div>
+                <div className="text-white font-mono text-xl tracking-[0.15em] pt-1">
+                  {cardData.cardNumber}
+                </div>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <div className="text-white/70 text-[10px]">Expires</div>
+                    <div className="text-white font-mono text-sm">{cardData.cardExpiry}</div>
+                  </div>
+                  <div>
+                    <div className="text-white/70 text-[10px]">CVV</div>
+                    <div className="text-white font-mono text-sm">{cardData.cardCvv}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full max-w-sm space-y-2.5">
+              {[
+                { icon: User, label: "Имя на карте", value: cardData.cardName },
+                { icon: CreditCard, label: "Номер карты", value: cardData.cardNumber },
+                { icon: Calendar, label: "Срок действия", value: cardData.cardExpiry },
+                { icon: Lock, label: "CVV", value: cardData.cardCvv },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between bg-secondary/40 rounded-xl px-4 py-3 border border-border/40">
+                  <div className="flex items-center gap-3 text-left">
+                    <item.icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{item.label}</div>
+                      <div className="font-mono text-foreground text-sm">{item.value}</div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 hover:bg-primary/20 hover:text-primary"
+                    onClick={() => copy(item.value, `${item.label} скопирован`)}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-muted-foreground max-w-sm">
+              <p>Если карта когда-либо будет использована для авторизации — транзакция будет отклонена, но вы получите тревогу.</p>
+            </div>
+
+            <Button
+              onClick={handleTestCard}
+              disabled={testingCard}
+              className="gap-2 bg-primary hover:bg-primary/90"
+            >
+              {testingCard ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Тестирование…</>
+              ) : (
+                <><CreditCard className="w-4 h-4" /> Тест карты</>
+              )}
+            </Button>
           </CardContent>
         </Card>
       )}

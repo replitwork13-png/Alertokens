@@ -16,4 +16,5 @@ export const TokenType = {
   word: "word",
   qr_code: "qr_code",
   image: "image",
+  credit_card: "credit_card",
 } as const;
