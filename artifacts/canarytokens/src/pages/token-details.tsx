@@ -167,7 +167,7 @@ export default function TokenDetails() {
     if (!qrDataUrl) return;
     const a = document.createElement("a");
     a.href = qrDataUrl;
-    a.download = `canarytoken-qr-${token.name.replace(/\s+/g, "-").toLowerCase()}.png`;
+    a.download = `alertoken-qr-${token.name.replace(/\s+/g, "-").toLowerCase()}.png`;
     a.click();
   };
 
@@ -363,7 +363,7 @@ export default function TokenDetails() {
               }} />
               <div className="relative z-10 text-left space-y-4">
                 <div className="flex justify-between items-start">
-                  <div className="text-white/60 text-[10px] uppercase tracking-widest font-bold">CanaryToken</div>
+                  <div className="text-white/60 text-[10px] uppercase tracking-widest font-bold">Alertoken</div>
                   <div className="text-white font-bold text-lg tracking-wider">{cardData.cardBrand}</div>
                 </div>
                 <div className="pt-2">

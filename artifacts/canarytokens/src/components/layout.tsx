@@ -23,7 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <Shield className="w-5 h-5" />
             </div>
             <span className="font-bold text-lg tracking-tight text-foreground">
-              Canary<span className="text-primary">Tokens</span>
+              Alert<span className="text-primary">okens</span>
             </span>
           </div>
 
