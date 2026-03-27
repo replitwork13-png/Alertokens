@@ -2,13 +2,14 @@ import { useRoute, useLocation } from "wouter";
 import { useGetToken, useListTokenAlerts, useDeleteToken } from "@workspace/api-client-react";
 import type { GeoData } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
-import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useCopy } from "@/hooks/use-copy";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import QRCode from "qrcode";
 
 const TOKEN_TYPE_LABELS: Record<string, string> = {
   web: "Веб",
@@ -121,11 +122,32 @@ export default function TokenDetails() {
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (token?.triggerUrl) {
+      QRCode.toDataURL(token.triggerUrl, {
+        width: 300,
+        margin: 2,
+        color: { dark: "#000000", light: "#ffffff" },
+        errorCorrectionLevel: "M",
+      }).then(setQrDataUrl).catch(() => setQrDataUrl(null));
+    }
+  }, [token?.triggerUrl]);
 
   if (isLoading) return <div className="p-8 text-center animate-pulse text-muted-foreground">Загрузка данных…</div>;
   if (error || !token) return <div className="p-8 text-center text-destructive font-mono">ОШИБКА: Токен не найден или доступ запрещён.</div>;
 
   const fullUrl = token.triggerUrl;
+  const isQrType = token.type === "qr_code";
+
+  const downloadQr = () => {
+    if (!qrDataUrl) return;
+    const a = document.createElement("a");
+    a.href = qrDataUrl;
+    a.download = `canarytoken-qr-${token.name.replace(/\s+/g, "-").toLowerCase()}.png`;
+    a.click();
+  };
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -201,6 +223,43 @@ export default function TokenDetails() {
           </p>
         </CardContent>
       </Card>
+
+      {/* QR Code */}
+      {qrDataUrl && (
+        <Card className={cn(isQrType && "border-primary/30 shadow-lg")}>
+          <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+            {isQrType && (
+              <>
+                <div className="bg-primary/20 p-3 rounded-full">
+                  <QrCode className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">QR-код токен активен!</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Используйте этот QR-код для защиты физических объектов или документов.
+                  </p>
+                </div>
+              </>
+            )}
+            {!isQrType && (
+              <CardTitle className="text-lg flex items-center gap-2 self-start">
+                <QrCode className="w-5 h-5 text-primary" />
+                QR-код
+              </CardTitle>
+            )}
+            <div className="bg-white p-4 rounded-xl inline-block">
+              <img src={qrDataUrl} alt="QR-код для токена" className="w-[200px] h-[200px]" />
+            </div>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Когда кто-то отсканирует этот QR-код, он перейдёт по URL токена и сработает оповещение.
+            </p>
+            <Button onClick={downloadQr} className="gap-2">
+              <Download className="w-4 h-4" />
+              Скачать QR-код
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Alerts */}
       <div>
