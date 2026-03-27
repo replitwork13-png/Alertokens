@@ -1,0 +1,14 @@
+packages:
+  "framer-motion": "For smooth page transitions and interactive element animations"
+  "date-fns": "For formatting trigger times and creation dates nicely"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes without style conflicts"
+
+images:
+  - path: "artifacts/canarytokens/public/images/cyber-bg.png"
+    description: "Abstract dark background with subtle glowing green digital grid lines and data nodes, cyberpunk security theme"
+    aspect_ratio: "16:9"
+
+notes:
+  - Using generated API hooks directly from @workspace/api-client-react
+  - Assuming trigger URLs are formatted as /api/trigger/{token}?ref=value

@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Canarytokens API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: tokens
+    description: Canary token operations
+  - name: alerts
+    description: Alert/trigger operations
 paths:
   /healthz:
     get:
@@ -24,6 +27,162 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /tokens:
+    get:
+      operationId: listTokens
+      tags: [tokens]
+      summary: List all tokens
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of tokens
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenListResponse"
+    post:
+      operationId: createToken
+      tags: [tokens]
+      summary: Create a new canary token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTokenRequest"
+      responses:
+        "201":
+          description: Created token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+
+  /tokens/{tokenId}:
+    get:
+      operationId: getToken
+      tags: [tokens]
+      summary: Get a token by ID
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Token details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteToken
+      tags: [tokens]
+      summary: Delete a token
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tokens/{tokenId}/alerts:
+    get:
+      operationId: listTokenAlerts
+      tags: [alerts]
+      summary: List alerts for a token
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertListResponse"
+
+  /trigger/{token}:
+    get:
+      operationId: triggerToken
+      tags: [tokens]
+      summary: Trigger a token (the actual canary URL)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ref
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Token triggered, returns a 1x1 pixel image or redirect
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [tokens]
+      summary: Get overall stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +193,176 @@ components:
       required:
         - status
 
+    TokenType:
+      type: string
+      enum:
+        - web
+        - dns
+        - email
+        - pdf
+        - word
+        - qr_code
+        - image
+
+    Token:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          $ref: "#/components/schemas/TokenType"
+        name:
+          type: string
+        memo:
+          type: string
+        token:
+          type: string
+        triggerUrl:
+          type: string
+        alertEmail:
+          type: string
+          nullable: true
+        triggered:
+          type: boolean
+        triggerCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        lastTriggeredAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - type
+        - name
+        - memo
+        - token
+        - triggerUrl
+        - triggered
+        - triggerCount
+        - createdAt
+
+    CreateTokenRequest:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/TokenType"
+        name:
+          type: string
+        memo:
+          type: string
+        alertEmail:
+          type: string
+          nullable: true
+      required:
+        - type
+        - name
+        - memo
+
+    TokenListResponse:
+      type: object
+      properties:
+        tokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/Token"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - tokens
+        - total
+        - page
+        - limit
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+        tokenId:
+          type: string
+        ipAddress:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+        referer:
+          type: string
+          nullable: true
+        geo:
+          type: string
+          nullable: true
+        triggeredAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tokenId
+        - triggeredAt
+
+    AlertListResponse:
+      type: object
+      properties:
+        alerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Alert"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - alerts
+        - total
+        - page
+        - limit
+
+    StatsResponse:
+      type: object
+      properties:
+        totalTokens:
+          type: integer
+        triggeredTokens:
+          type: integer
+        totalAlerts:
+          type: integer
+        recentAlerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Alert"
+      required:
+        - totalTokens
+        - triggeredTokens
+        - totalAlerts
+        - recentAlerts
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message

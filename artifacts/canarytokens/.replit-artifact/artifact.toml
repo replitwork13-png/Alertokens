@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Canarytokens"
+version = "1.0.0"
+id = "artifacts/canarytokens"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24106
+
+[services.development]
+run = "pnpm --filter @workspace/canarytokens run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/canarytokens", "run", "build" ]
+publicDir = "artifacts/canarytokens/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24106"
+BASE_PATH = "/"
