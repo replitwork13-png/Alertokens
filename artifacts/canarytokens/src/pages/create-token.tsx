@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useCreateToken } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Button } from "@/components/ui-components";
-import { ShieldAlert, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, Loader2 } from "lucide-react";
+import { ShieldAlert, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { TokenType } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
+
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const TOKEN_TYPES = [
   { id: TokenType.web, name: "Веб-ловушка", icon: Network, desc: "Срабатывает при открытии URL." },
@@ -13,7 +15,7 @@ const TOKEN_TYPES = [
   { id: TokenType.pdf, name: "PDF-документ", icon: FileText, desc: "Срабатывает при открытии файла." },
   { id: TokenType.word, name: "Word-документ", icon: FileText, desc: "Срабатывает при открытии файла." },
   { id: TokenType.qr_code, name: "QR-код", icon: QrCode, desc: "Срабатывает при сканировании." },
-  { id: TokenType.image, name: "Изображение", icon: ImageIcon, desc: "Пиксель 1×1 — невидимая ловушка." },
+  { id: TokenType.image, name: "Изображение", icon: ImageIcon, desc: "Встроите своё изображение с трекером." },
 ];
 
 export default function CreateToken() {
@@ -22,18 +24,55 @@ export default function CreateToken() {
   const [name, setName] = useState("");
   const [memo, setMemo] = useState("");
   const [alertEmail, setAlertEmail] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createMutation = useCreateToken({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
+        if (type === TokenType.image && imageFile) {
+          try {
+            const formData = new FormData();
+            formData.append("image", imageFile);
+            await fetch(`${API_BASE}/tokens/${data.id}/upload-image`, {
+              method: "POST",
+              body: formData,
+            });
+          } catch (err) {
+            console.error("Failed to upload image", err);
+          }
+        }
+        setIsSubmitting(false);
         setLocation(`/token/${data.id}`);
+      },
+      onError: () => {
+        setIsSubmitting(false);
       }
     }
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const removeFile = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !memo) return;
+    if (type === TokenType.image && !imageFile) return;
+    setIsSubmitting(true);
     createMutation.mutate({
       data: { type, name, memo, alertEmail: alertEmail || undefined }
     });
@@ -80,9 +119,51 @@ export default function CreateToken() {
           </CardContent>
         </Card>
 
+        {type === TokenType.image && (
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle>Загрузите изображение</CardTitle>
+              <CardDescription>Это изображение будет отдаваться при открытии URL-ловушки. Любой доступ к нему вызовет срабатывание.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              {imagePreview ? (
+                <div className="relative rounded-xl border-2 border-dashed border-primary/40 p-4 flex flex-col items-center gap-3">
+                  <img src={imagePreview} alt="Превью" className="max-h-48 max-w-full rounded-lg object-contain" />
+                  <p className="text-sm text-muted-foreground truncate max-w-full">{imageFile?.name}</p>
+                  <button
+                    type="button"
+                    onClick={removeFile}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-destructive/20 hover:bg-destructive/40 text-destructive transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-xl border-2 border-dashed border-border/60 hover:border-primary/50 p-8 flex flex-col items-center gap-3 cursor-pointer transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Нажмите, чтобы выбрать файл</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG, GIF, WebP, SVG — до 10 МБ</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>2. Данные токена</CardTitle>
+            <CardTitle>{type === TokenType.image ? "3" : "2"}. Данные токена</CardTitle>
             <CardDescription>Укажите название и напоминание — чтобы потом понять, что это и где стоит.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -128,10 +209,10 @@ export default function CreateToken() {
           <Button
             type="submit"
             size="lg"
-            disabled={!name || !memo || createMutation.isPending}
+            disabled={!name || !memo || isSubmitting || (type === TokenType.image && !imageFile)}
             className="font-bold tracking-wide"
           >
-            {createMutation.isPending ? (
+            {isSubmitting ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Создание…</>
             ) : (
               "Создать токен"

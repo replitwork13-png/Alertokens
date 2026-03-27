@@ -2,7 +2,11 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, tokensTable, alertsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import path from "path";
+import fs from "fs";
 import { sendTokenAlertEmail } from "../lib/email";
+
+const UPLOADS_DIR = path.resolve(import.meta.dirname, "../../uploads");
 
 const router: IRouter = Router();
 
@@ -60,20 +64,45 @@ router.get("/:token", async (req: Request, res: Response) => {
 
   const triggeredAt = new Date();
 
-  // Send pixel immediately — don't block on DB or geo lookup
-  res.set("Content-Type", "image/png");
+  // Look up token first to decide what to serve
+  let found;
+  try {
+    found = await db.select().from(tokensTable).where(eq(tokensTable.token, token)).limit(1);
+  } catch {
+    res.set("Content-Type", "image/png");
+    res.send(PIXEL_PNG);
+    return;
+  }
+
+  if (!found.length) {
+    res.set("Content-Type", "image/png");
+    res.send(PIXEL_PNG);
+    return;
+  }
+
+  const t = found[0];
+
+  // Serve the uploaded image for image tokens, or 1x1 pixel for others
   res.set("Cache-Control", "no-cache, no-store, must-revalidate");
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
-  res.send(PIXEL_PNG);
+
+  if (t.type === "image" && t.imagePath) {
+    const filePath = path.join(UPLOADS_DIR, t.imagePath);
+    if (fs.existsSync(filePath)) {
+      res.set("Content-Type", t.imageMime || "image/png");
+      res.sendFile(filePath);
+    } else {
+      res.set("Content-Type", "image/png");
+      res.send(PIXEL_PNG);
+    }
+  } else {
+    res.set("Content-Type", "image/png");
+    res.send(PIXEL_PNG);
+  }
 
   // Process in background (after response sent)
   try {
-    const found = await db.select().from(tokensTable).where(eq(tokensTable.token, token)).limit(1);
-
-    if (!found.length) return;
-
-    const t = found[0];
     const alertId = crypto.randomUUID();
 
     // Insert alert immediately with what we have

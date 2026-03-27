@@ -2,7 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useGetToken, useListTokenAlerts, useDeleteToken } from "@workspace/api-client-react";
 import type { GeoData } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
-import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useCopy } from "@/hooks/use-copy";
@@ -140,6 +140,9 @@ export default function TokenDetails() {
 
   const fullUrl = token.triggerUrl;
   const isQrType = token.type === "qr_code";
+  const isImageType = token.type === "image";
+  const API_BASE = import.meta.env.VITE_API_URL || "/api";
+  const imagePreviewUrl = isImageType ? `${API_BASE}/tokens/${token.id}/image` : null;
 
   const downloadQr = () => {
     if (!qrDataUrl) return;
@@ -223,6 +226,34 @@ export default function TokenDetails() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Image Preview */}
+      {isImageType && imagePreviewUrl && (
+        <Card className="border-primary/30 shadow-lg">
+          <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+            <div className="bg-primary/20 p-3 rounded-full">
+              <ImageIcon className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Изображение-ловушка активно!</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                Встройте URL этого изображения куда угодно. Каждое открытие вызовет тревогу.
+              </p>
+            </div>
+            <div className="bg-black/30 p-4 rounded-xl border border-border/50 max-w-full overflow-hidden">
+              <img
+                src={imagePreviewUrl}
+                alt="Изображение-ловушка"
+                className="max-h-64 max-w-full rounded-lg object-contain"
+              />
+            </div>
+            <div className="text-xs text-muted-foreground max-w-sm space-y-1">
+              <p>Используйте URL ловушки как <code className="text-primary">src</code> изображения на сайте, в email или документе.</p>
+              <p>Пример: <code className="text-primary/80 text-[11px]">&lt;img src="{fullUrl}"&gt;</code></p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* QR Code */}
       {qrDataUrl && (

@@ -19,6 +19,8 @@ export const tokensTable = pgTable("tokens", {
   memo: text("memo").notNull().default(""),
   token: text("token").notNull().unique(),
   alertEmail: text("alert_email"),
+  imagePath: text("image_path"),
+  imageMime: text("image_mime"),
   triggered: boolean("triggered").notNull().default(false),
   triggerCount: integer("trigger_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
