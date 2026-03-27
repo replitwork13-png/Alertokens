@@ -2,7 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useGetToken, useListTokenAlerts, useDeleteToken } from "@workspace/api-client-react";
 import type { GeoData } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
-import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon, CreditCard, Lock, Calendar, User, Loader2, ExternalLink, FileText } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon, CreditCard, Lock, Calendar, User, Loader2, ExternalLink, FileText, X, HelpCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useCopy } from "@/hooks/use-copy";
@@ -411,21 +411,65 @@ export default function TokenDetails() {
               ))}
             </div>
 
-            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-muted-foreground max-w-sm">
-              <p>Если карта когда-либо будет использована для авторизации — транзакция будет отклонена, но вы получите тревогу.</p>
+            <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-5 space-y-4 shadow-md">
+              <div className="flex items-start justify-between">
+                <p className="text-sm text-muted-foreground leading-snug max-w-[220px]">
+                  Мы сгенерируем фейковую транзакцию, которая вызовет срабатывание тревоги для этого токена.
+                </p>
+                <button
+                  onClick={() => {}}
+                  className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div>
+                <div className="text-sm font-semibold mb-1.5">Card Number</div>
+                <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
+                  <span className="font-mono text-sm tracking-wide flex-1">{cardData.cardNumber}</span>
+                  <span className="text-[10px] font-bold tracking-wider text-blue-500 uppercase">VISA</span>
+                  <div className="w-6 h-4 rounded-sm bg-gradient-to-br from-red-500 to-yellow-500 flex items-center justify-center">
+                    <div className="w-2.5 h-2.5 rounded-full border border-white/60" />
+                  </div>
+                  <Copy className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary" onClick={() => copy(cardData.cardNumber, "Номер карты скопирован")} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-sm font-semibold mb-1.5">Expiration date</div>
+                  <div className="bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
+                    <span className="font-mono text-sm">{cardData.cardExpiry}</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold mb-1.5">Security code</div>
+                  <div className="bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
+                    <span className="font-mono text-sm">{cardData.cardCvv}</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleTestCard}
+                disabled={testingCard}
+                className="w-full gap-2 bg-[#1a1a2e] hover:bg-[#16162a] text-white font-semibold py-6 text-base rounded-xl"
+              >
+                {testingCard ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Обработка…</>
+                ) : (
+                  "Pay $100.00"
+                )}
+              </Button>
             </div>
 
-            <Button
-              onClick={handleTestCard}
-              disabled={testingCard}
-              className="gap-2 bg-primary hover:bg-primary/90"
-            >
-              {testingCard ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Тестирование…</>
-              ) : (
-                <><CreditCard className="w-4 h-4" /> Тест карты</>
-              )}
-            </Button>
+            <div className="bg-sky-500/10 border border-sky-400/20 rounded-2xl p-5 text-sm text-muted-foreground max-w-sm flex gap-3">
+              <div className="bg-sky-500/20 rounded-full p-2 shrink-0 self-start">
+                <HelpCircle className="w-5 h-5 text-sky-400" />
+              </div>
+              <p>Если карта когда-либо будет использована для авторизации — транзакция будет отклонена, но вы получите тревогу.</p>
+            </div>
           </CardContent>
         </Card>
       )}
