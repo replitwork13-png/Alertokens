@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, tokensTable, alertsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import { sendTokenAlertEmail } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -18,6 +19,8 @@ router.get("/:token", async (req: Request, res: Response) => {
     (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
     req.socket.remoteAddress ||
     null;
+
+  const triggeredAt = new Date();
 
   try {
     const found = await db.select().from(tokensTable).where(eq(tokensTable.token, token)).limit(1);
@@ -39,10 +42,24 @@ router.get("/:token", async (req: Request, res: Response) => {
           .set({
             triggered: true,
             triggerCount: t.triggerCount + 1,
-            lastTriggeredAt: new Date(),
+            lastTriggeredAt: triggeredAt,
           })
           .where(eq(tokensTable.id, t.id)),
       ]);
+
+      if (t.alertEmail) {
+        sendTokenAlertEmail({
+          toEmail: t.alertEmail,
+          tokenName: t.name,
+          tokenType: t.type,
+          ipAddress,
+          userAgent,
+          referer: referer as string | null,
+          triggeredAt,
+        }).catch((err) => {
+          req.log.error({ err }, "Failed to send alert email");
+        });
+      }
     }
   } catch (err) {
     req.log.error({ err }, "Error recording token trigger");
