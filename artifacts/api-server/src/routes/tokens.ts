@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db, tokensTable, alertsTable } from "@workspace/db";
-import { eq, desc, count, sql } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { CreateTokenBody, ListTokensQueryParams, GetTokenParams, DeleteTokenParams } from "@workspace/api-zod";
 import crypto from "crypto";
 
@@ -15,7 +15,13 @@ function generateId(): string {
 }
 
 function buildTriggerUrl(token: string, req: Request): string {
-  const host = req.headers["x-forwarded-host"] || req.headers.host || "localhost";
+  // Use REPLIT_DOMAINS env var if available (most reliable in Replit environment)
+  const replitDomain = process.env.REPLIT_DOMAINS?.split(",")[0]?.trim();
+  if (replitDomain) {
+    return `https://${replitDomain}/api/trigger/${token}`;
+  }
+  // Fallback: reconstruct from request headers
+  const host = (req.headers["x-forwarded-host"] as string)?.split(",")[0]?.trim() || req.headers.host || "localhost";
   const proto = req.headers["x-forwarded-proto"] || "https";
   return `${proto}://${host}/api/trigger/${token}`;
 }

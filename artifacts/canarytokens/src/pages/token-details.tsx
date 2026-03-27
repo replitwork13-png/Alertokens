@@ -29,7 +29,7 @@ export default function TokenDetails() {
   if (isLoading) return <div className="p-8 text-center animate-pulse">Decrypting data...</div>;
   if (error || !token) return <div className="p-8 text-center text-destructive font-mono">ERROR: Token not found or access denied.</div>;
 
-  const fullUrl = `${window.location.origin}${token.triggerUrl}`;
+  const fullUrl = token.triggerUrl;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
