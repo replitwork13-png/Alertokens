@@ -466,7 +466,7 @@ export default function TokenDetails() {
                   <div>
                     <div className="text-sm font-semibold mb-1.5">Номер карты</div>
                     <div className="flex items-center gap-2 bg-secondary/60 border border-border rounded-lg px-3 py-2.5">
-                      <span className="font-mono text-sm tracking-wide flex-1">{cardData.cardNumber}</span>
+                      <span className="font-mono text-xs tracking-tight flex-1">{cardData.cardNumber}</span>
                       <span className="text-[10px] font-bold tracking-wider text-blue-500 uppercase">VISA</span>
                       <div className="w-6 h-4 rounded-sm bg-gradient-to-br from-red-500 to-yellow-500 flex items-center justify-center">
                         <div className="w-2.5 h-2.5 rounded-full border border-white/60" />
