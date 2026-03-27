@@ -125,7 +125,7 @@ router.post("/", async (req: Request, res: Response) => {
       return;
     }
 
-    const { type, name, memo, alertEmail } = parsed.data;
+    const { type, name, memo, alertEmail, redirectUrl } = parsed.data;
     const id = generateId();
     const token = generateToken();
 
@@ -133,7 +133,12 @@ router.post("/", async (req: Request, res: Response) => {
 
     const [created] = await db
       .insert(tokensTable)
-      .values({ id, type, name, memo, token, alertEmail: alertEmail ?? null, cardData })
+      .values({
+        id, type, name, memo, token,
+        alertEmail: alertEmail ?? null,
+        cardData,
+        redirectUrl: type === "redirect" ? (redirectUrl ?? null) : null,
+      })
       .returning();
 
     res.status(201).json({
@@ -145,6 +150,7 @@ router.post("/", async (req: Request, res: Response) => {
       triggerUrl: buildTriggerUrl(created.token, req),
       alertEmail: created.alertEmail,
       cardData: created.cardData,
+      redirectUrl: created.redirectUrl,
       triggered: created.triggered,
       triggerCount: created.triggerCount,
       createdAt: created.createdAt.toISOString(),
@@ -180,6 +186,7 @@ router.get("/:tokenId", async (req: Request, res: Response) => {
       triggerUrl: buildTriggerUrl(t.token, req),
       alertEmail: t.alertEmail,
       cardData: t.cardData,
+      redirectUrl: t.redirectUrl,
       triggered: t.triggered,
       triggerCount: t.triggerCount,
       createdAt: t.createdAt.toISOString(),

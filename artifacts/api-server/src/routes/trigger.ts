@@ -82,12 +82,14 @@ router.get("/:token", async (req: Request, res: Response) => {
 
   const t = found[0];
 
-  // Serve the uploaded image for image tokens, or 1x1 pixel for others
+  // Serve response based on token type
   res.set("Cache-Control", "no-cache, no-store, must-revalidate");
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
 
-  if (t.type === "image" && t.imagePath) {
+  if (t.type === "redirect" && t.redirectUrl) {
+    res.redirect(302, t.redirectUrl);
+  } else if (t.type === "image" && t.imagePath) {
     const filePath = path.join(UPLOADS_DIR, t.imagePath);
     if (fs.existsSync(filePath)) {
       res.set("Content-Type", t.imageMime || "image/png");

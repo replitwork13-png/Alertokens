@@ -11,6 +11,7 @@ export const tokenTypeEnum = pgEnum("token_type", [
   "qr_code",
   "image",
   "credit_card",
+  "redirect",
 ]);
 
 export const tokensTable = pgTable("tokens", {
@@ -23,6 +24,7 @@ export const tokensTable = pgTable("tokens", {
   imagePath: text("image_path"),
   imageMime: text("image_mime"),
   cardData: jsonb("card_data"),
+  redirectUrl: text("redirect_url"),
   triggered: boolean("triggered").notNull().default(false),
   triggerCount: integer("trigger_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),

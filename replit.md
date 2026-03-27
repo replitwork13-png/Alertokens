@@ -73,7 +73,7 @@ React + Vite frontend for the Canarytokens app. Dark security-themed UI.
 - Pages: Dashboard (command center), Create Token, Token Details
 - Uses React Query hooks from `@workspace/api-client-react`
 - Dark mode green-accented security terminal aesthetic
-- Supports token types: web, dns, email, pdf, word, qr_code, image, credit_card
+- Supports token types: web, dns, email, pdf, word, qr_code, image, credit_card, redirect
 
 ### `lib/db` (`@workspace/db`)
 

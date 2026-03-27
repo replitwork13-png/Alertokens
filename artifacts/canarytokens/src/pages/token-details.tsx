@@ -2,7 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useGetToken, useListTokenAlerts, useDeleteToken } from "@workspace/api-client-react";
 import type { GeoData } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
-import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon, CreditCard, Lock, Calendar, User, Loader2 } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, Trash2, ArrowLeft, Clock, MapPin, Monitor, Network, Globe, Building2, CalendarClock, QrCode, Download, Image as ImageIcon, CreditCard, Lock, Calendar, User, Loader2, ExternalLink } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useCopy } from "@/hooks/use-copy";
@@ -20,6 +20,7 @@ const TOKEN_TYPE_LABELS: Record<string, string> = {
   qr_code: "QR-код",
   image: "Изображение",
   credit_card: "Кредитная карта",
+  redirect: "URL-редирект",
 };
 
 function GeoInfoBlock({ geoData }: { geoData: GeoData }) {
@@ -144,6 +145,7 @@ export default function TokenDetails() {
   const isQrType = token.type === "qr_code";
   const isImageType = token.type === "image";
   const isCreditCard = token.type === "credit_card";
+  const isRedirect = token.type === "redirect";
   const API_BASE = import.meta.env.VITE_API_URL || "/api";
   const imagePreviewUrl = isImageType ? `${API_BASE}/tokens/${token.id}/image` : null;
   const cardData = token.cardData as { cardName: string; cardNumber: string; cardExpiry: string; cardCvv: string; cardBrand: string } | null;
@@ -240,6 +242,40 @@ export default function TokenDetails() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Redirect Info */}
+      {isRedirect && token.redirectUrl && (
+        <Card className="border-primary/30 shadow-lg">
+          <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+            <div className="bg-primary/20 p-3 rounded-full">
+              <ExternalLink className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">URL-редирект активен!</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                При переходе по URL ловушки пользователь будет мгновенно перенаправлен, а тревога записана.
+              </p>
+            </div>
+            <div className="w-full max-w-sm">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 text-left">Перенаправление на</div>
+              <div className="bg-black/40 rounded-lg border border-border/50 px-4 py-3 flex items-center justify-between gap-3">
+                <code className="text-primary break-all text-sm flex-1">{token.redirectUrl}</code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0 hover:bg-primary/20 hover:text-primary"
+                  onClick={() => copy(token.redirectUrl!, "URL скопирован")}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-muted-foreground max-w-sm">
+              <p>Подставьте URL ловушки вместо настоящей ссылки. Переход по ней выглядит как обычный редирект, но вы получите тревогу с IP-адресом и данными браузера.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Image Preview */}
       {isImageType && imagePreviewUrl && (

@@ -17,4 +17,5 @@ export const TokenType = {
   qr_code: "qr_code",
   image: "image",
   credit_card: "credit_card",
+  redirect: "redirect",
 } as const;

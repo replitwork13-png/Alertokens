@@ -20,6 +20,7 @@ export const TokenType = {
   qr_code: "qr_code",
   image: "image",
   credit_card: "credit_card",
+  redirect: "redirect",
 } as const;
 
 export interface CardData {
@@ -39,6 +40,7 @@ export interface Token {
   triggerUrl: string;
   alertEmail?: string | null;
   cardData?: CardData | null;
+  redirectUrl?: string | null;
   triggered: boolean;
   triggerCount: number;
   createdAt: string;
@@ -50,6 +52,7 @@ export interface CreateTokenRequest {
   name: string;
   memo: string;
   alertEmail?: string | null;
+  redirectUrl?: string | null;
 }
 
 export interface TokenListResponse {

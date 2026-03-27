@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useCreateToken } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Button } from "@/components/ui-components";
-import { ShieldAlert, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, Loader2, Upload, X, CreditCard } from "lucide-react";
+import { ShieldAlert, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, Loader2, Upload, X, CreditCard, ExternalLink } from "lucide-react";
 import { TokenType } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ const TOKEN_TYPES = [
   { id: TokenType.qr_code, name: "QR-код", icon: QrCode, desc: "Срабатывает при сканировании." },
   { id: TokenType.image, name: "Изображение", icon: ImageIcon, desc: "Встроите своё изображение с трекером." },
   { id: TokenType.credit_card, name: "Кредитная карта", icon: CreditCard, desc: "Фейковая карта — ловушка для воров." },
+  { id: TokenType.redirect, name: "URL-редирект", icon: ExternalLink, desc: "Перенаправляет на URL и записывает тревогу." },
 ];
 
 export default function CreateToken() {
@@ -25,6 +26,7 @@ export default function CreateToken() {
   const [name, setName] = useState("");
   const [memo, setMemo] = useState("");
   const [alertEmail, setAlertEmail] = useState("");
+  const [redirectUrl, setRedirectUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,9 +75,14 @@ export default function CreateToken() {
     e.preventDefault();
     if (!name || !memo) return;
     if (type === TokenType.image && !imageFile) return;
+    if (type === TokenType.redirect && !redirectUrl) return;
     setIsSubmitting(true);
     createMutation.mutate({
-      data: { type, name, memo, alertEmail: alertEmail || undefined }
+      data: {
+        type, name, memo,
+        alertEmail: alertEmail || undefined,
+        redirectUrl: type === TokenType.redirect ? redirectUrl : undefined,
+      }
     });
   };
 
@@ -162,9 +169,27 @@ export default function CreateToken() {
           </Card>
         )}
 
+        {type === TokenType.redirect && (
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle>URL для перенаправления</CardTitle>
+              <CardDescription>Куда перенаправить пользователя после перехода по ловушке. Тревога запишется, а пользователь окажется на этом URL.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Input
+                type="url"
+                placeholder="https://www.example.com"
+                value={redirectUrl}
+                onChange={(e) => setRedirectUrl(e.target.value)}
+                required
+              />
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>{type === TokenType.image ? "3" : "2"}. Данные токена</CardTitle>
+            <CardTitle>{(type === TokenType.image || type === TokenType.redirect) ? "3" : "2"}. Данные токена</CardTitle>
             <CardDescription>Укажите название и напоминание — чтобы потом понять, что это и где стоит.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -210,7 +235,7 @@ export default function CreateToken() {
           <Button
             type="submit"
             size="lg"
-            disabled={!name || !memo || isSubmitting || (type === TokenType.image && !imageFile)}
+            disabled={!name || !memo || isSubmitting || (type === TokenType.image && !imageFile) || (type === TokenType.redirect && !redirectUrl)}
             className="font-bold tracking-wide"
           >
             {isSubmitting ? (
