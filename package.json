@@ -1,16 +1,45 @@
 {
-  "name": "workspace",
-  "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {
-    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
-  },
+  "name": "alertokens",
+  "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "dev": "next dev --port ${PORT:-3001}",
+    "build": "next build",
+    "start": "next start --port ${PORT:-3001}",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.7",
+    "@radix-ui/react-accordion": "^1.2.4",
+    "@radix-ui/react-dialog": "^1.1.7",
+    "@radix-ui/react-select": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-tabs": "^1.1.4",
+    "@radix-ui/react-tooltip": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.5.0",
+    "lucide-react": "^0.545.0",
+    "framer-motion": "12.35.1",
+    "date-fns": "^3.6.0",
+    "qrcode": "^1.5.4",
+    "resend": "^4.6.0",
+    "zod": "^3.25.76",
+    "nanoid": "^5.1.5"
+  },
   "devDependencies": {
-    "typescript": "~5.9.2",
-    "prettier": "^3.8.1"
+    "@types/node": "^25.3.3",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/qrcode": "^1.5.6",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.8.0",
+    "@tailwindcss/postcss": "^4.1.14",
+    "tailwindcss": "^4.1.14"
   }
 }
