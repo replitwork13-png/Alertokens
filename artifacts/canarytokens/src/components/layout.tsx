@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Shield, LayoutDashboard, PlusCircle, Activity, Sun, Moon } from "lucide-react";
+import { Shield, LayoutDashboard, PlusCircle, HelpCircle, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/theme-context";
 
@@ -11,6 +11,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/", label: "Главная", icon: LayoutDashboard },
     { href: "/create", label: "Новый токен", icon: PlusCircle },
+    { href: "/faq", label: "FAQ", icon: HelpCircle },
   ];
 
   return (

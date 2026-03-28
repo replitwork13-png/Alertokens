@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import CreateToken from "@/pages/create-token";
 import TokenDetails from "@/pages/token-details";
 import NotFound from "@/pages/not-found";
+import Faq from "@/pages/faq";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/create" component={CreateToken} />
         <Route path="/token/:id" component={TokenDetails} />
+        <Route path="/faq" component={Faq} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
