@@ -6,18 +6,31 @@ import { DashboardClient } from "@/components/dashboard-client";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [tokens, [{ value: totalAlerts }]] = await Promise.all([
-    db.select().from(tokensTable).orderBy(desc(tokensTable.createdAt)),
-    db.select({ value: count() }).from(alertsTable),
-  ]);
+  try {
+    if (!db) throw new Error("Database not configured");
 
-  const triggeredCount = tokens.filter((t) => t.triggered).length;
+    const [tokens, [{ value: totalAlerts }]] = await Promise.all([
+      db.select().from(tokensTable).orderBy(desc(tokensTable.createdAt)),
+      db.select({ value: count() }).from(alertsTable),
+    ]);
 
-  return (
-    <DashboardClient
-      tokens={tokens}
-      totalAlerts={Number(totalAlerts)}
-      triggeredCount={triggeredCount}
-    />
-  );
+    const triggeredCount = tokens.filter((t) => t.triggered).length;
+
+    return (
+      <DashboardClient
+        tokens={tokens}
+        totalAlerts={Number(totalAlerts)}
+        triggeredCount={triggeredCount}
+      />
+    );
+  } catch (e) {
+    console.error("Dashboard error:", e);
+    return (
+      <DashboardClient
+        tokens={[]}
+        totalAlerts={0}
+        triggeredCount={0}
+      />
+    );
+  }
 }
