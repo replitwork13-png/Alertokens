@@ -68,15 +68,18 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 ### `artifacts/canarytokens` (`@workspace/canarytokens`)
 
-React + Vite frontend for the Alertokens app. Glassmorphism UI with purple/blue gradient accents.
+**Fully self-contained static React + Vite app** for the Alertokens honeypot tool. No backend or database required. All data stored in localStorage. Can be exported from `artifacts/canarytokens/dist/` and uploaded directly to static hosting (e.g. Porkbun).
 
-- Pages: Dashboard (command center), Create Token, Token Details
-- Uses React Query hooks from `@workspace/api-client-react`
-- Design: glassmorphism cards (backdrop-blur + translucent bg), purple/blue gradient buttons/icons, animated floating orbs background, framer-motion page transitions
-- Light/dark theme with toggle (localStorage persistence, anti-flash script)
-- Color scheme: purple primary (#7c3aed), gradient accents (purple→blue), rose for alerts
-- All UI labels in Russian
-- Supports token types: web, dns, email, pdf, word, qr_code, image, credit_card, redirect
+- **Architecture**: Pure client-side SPA — no API calls, no server, no database
+- **Data storage**: localStorage via `src/contexts/store-context.tsx` (`useStore()` hook)
+- **Routing**: Hash-based routing (`wouter` with `useHashLocation`) — works on any static host without server redirects
+- **Build**: `pnpm --filter @workspace/canarytokens run build` → outputs to `artifacts/canarytokens/dist/`
+- **Pages**: Dashboard, Create Token, Token Details, FAQ
+- **Token types**: web, dns, email, pdf, word, qr_code, image, credit_card, redirect
+- **Special features**: QR code generation (client-side), credit card generation (random fake data), image upload (base64 in localStorage), manual trigger recording
+- **Design**: glassmorphism cards (backdrop-blur + translucent bg), purple/blue gradient buttons/icons, animated floating orbs background, framer-motion transitions
+- **Theme**: Light/dark toggle, localStorage-persisted, anti-flash script in index.html
+- **Language**: All UI labels in Russian
 
 ### `lib/db` (`@workspace/db`)
 
