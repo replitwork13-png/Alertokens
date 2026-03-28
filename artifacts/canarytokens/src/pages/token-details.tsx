@@ -174,19 +174,19 @@ export default function TokenDetails() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <Link href="/" className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors text-sm">
+        <Link href="/" className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-all duration-300 text-sm hover:-translate-x-0.5">
           <ArrowLeft className="w-4 h-4" /> На главную
         </Link>
         <div className="flex items-center gap-2">
           {!showDeleteConfirm ? (
-            <Button variant="outline" size="sm" className="text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive" onClick={() => setShowDeleteConfirm(true)}>
+            <Button variant="outline" size="sm" className="text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive rounded-xl" onClick={() => setShowDeleteConfirm(true)}>
               <Trash2 className="w-4 h-4 mr-2" /> Удалить токен
             </Button>
           ) : (
-            <div className="flex items-center gap-2 bg-destructive/10 p-1 rounded-md border border-destructive/20">
+            <div className="flex items-center gap-2 bg-destructive/10 p-1 rounded-xl border border-destructive/20">
               <span className="text-sm text-destructive px-2 font-medium">Уверены?</span>
-              <Button size="sm" variant="ghost" onClick={() => setShowDeleteConfirm(false)}>Отмена</Button>
-              <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate({ tokenId: token.id })} disabled={deleteMutation.isPending}>
+              <Button size="sm" variant="ghost" onClick={() => setShowDeleteConfirm(false)} className="rounded-lg">Отмена</Button>
+              <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate({ tokenId: token.id })} disabled={deleteMutation.isPending} className="rounded-lg">
                 {deleteMutation.isPending ? "Удаление…" : "Удалить"}
               </Button>
             </div>
@@ -195,13 +195,13 @@ export default function TokenDetails() {
       </div>
 
       {/* Header */}
-      <Card className="border-t-4 border-t-primary shadow-xl bg-gradient-to-b from-card to-background relative overflow-hidden">
+      <div className="rounded-2xl glass-card overflow-hidden relative border-t-2 border-t-primary shadow-xl">
         {token.triggered && (
           <div className="absolute inset-0 border-4 border-destructive/50 rounded-xl pointer-events-none animate-pulse" />
         )}
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className={`p-4 rounded-xl ${token.triggered ? 'bg-destructive/20 text-destructive' : 'bg-primary/20 text-primary'}`}>
+            <div className={`p-4 rounded-xl ${token.triggered ? 'bg-gradient-to-br from-rose-500/20 to-pink-500/20 text-rose-500' : 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-primary'}`}>
               {token.triggered ? <ShieldAlert className="w-12 h-12" /> : <ShieldCheck className="w-12 h-12" />}
             </div>
             <div className="flex-1 space-y-2">
@@ -221,7 +221,7 @@ export default function TokenDetails() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Trigger URL */}
       <Card>
@@ -356,7 +356,7 @@ export default function TokenDetails() {
             </div>
 
             <div className="w-full max-w-sm rounded-2xl p-6 relative overflow-hidden" style={{
-              background: "linear-gradient(135deg, #0a3d2e 0%, #10b981 50%, #059669 100%)"
+              background: "linear-gradient(135deg, #1a0a3d 0%, #7c3aed 50%, #6d28d9 100%)"
             }}>
               <div className="absolute inset-0 opacity-10" style={{
                 backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)"

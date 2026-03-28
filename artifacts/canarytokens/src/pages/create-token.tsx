@@ -5,19 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Texta
 import { ShieldAlert, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, Loader2, Upload, X, CreditCard, ExternalLink } from "lucide-react";
 import { TokenType } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const TOKEN_TYPES = [
-  { id: TokenType.web, name: "Веб-ловушка", icon: Network, desc: "Срабатывает при открытии URL." },
-  { id: TokenType.dns, name: "DNS-токен", icon: Globe, desc: "Срабатывает при DNS-запросе." },
-  { id: TokenType.email, name: "Email-адрес", icon: Mail, desc: "Срабатывает при отправке письма." },
-  { id: TokenType.pdf, name: "PDF-документ", icon: FileText, desc: "Срабатывает при открытии файла." },
-  { id: TokenType.word, name: "Word-документ", icon: FileText, desc: "Срабатывает при открытии файла." },
-  { id: TokenType.qr_code, name: "QR-код", icon: QrCode, desc: "Срабатывает при сканировании." },
-  { id: TokenType.image, name: "Изображение", icon: ImageIcon, desc: "Встроите своё изображение с трекером." },
-  { id: TokenType.credit_card, name: "Кредитная карта", icon: CreditCard, desc: "Фейковая карта — ловушка для воров." },
-  { id: TokenType.redirect, name: "URL-редирект", icon: ExternalLink, desc: "Перенаправляет на URL и записывает тревогу." },
+  { id: TokenType.web, name: "Веб-ловушка", icon: Network, desc: "Срабатывает при открытии URL.", color: "from-blue-500 to-cyan-500" },
+  { id: TokenType.dns, name: "DNS-токен", icon: Globe, desc: "Срабатывает при DNS-запросе.", color: "from-emerald-500 to-teal-500" },
+  { id: TokenType.email, name: "Email-адрес", icon: Mail, desc: "Срабатывает при отправке письма.", color: "from-amber-500 to-orange-500" },
+  { id: TokenType.pdf, name: "PDF-документ", icon: FileText, desc: "Срабатывает при открытии файла.", color: "from-rose-500 to-pink-500" },
+  { id: TokenType.word, name: "Word-документ", icon: FileText, desc: "Срабатывает при открытии файла.", color: "from-blue-500 to-indigo-500" },
+  { id: TokenType.qr_code, name: "QR-код", icon: QrCode, desc: "Срабатывает при сканировании.", color: "from-violet-500 to-purple-500" },
+  { id: TokenType.image, name: "Изображение", icon: ImageIcon, desc: "Встроите своё изображение с трекером.", color: "from-pink-500 to-fuchsia-500" },
+  { id: TokenType.credit_card, name: "Кредитная карта", icon: CreditCard, desc: "Фейковая карта — ловушка для воров.", color: "from-yellow-500 to-amber-500" },
+  { id: TokenType.redirect, name: "URL-редирект", icon: ExternalLink, desc: "Перенаправляет на URL и записывает тревогу.", color: "from-teal-500 to-emerald-500" },
 ];
 
 export default function CreateToken() {
@@ -86,23 +87,36 @@ export default function CreateToken() {
     });
   };
 
+  const selectedType = TOKEN_TYPES.find(t => t.id === type);
+
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-          <ShieldAlert className="w-7 h-7 text-primary" />
+    <div className="max-w-3xl mx-auto space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/20">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
           Создать токен
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">Разверните новую ловушку для обнаружения несанкционированного доступа.</p>
-      </div>
+        <p className="text-muted-foreground mt-2 text-sm">Разверните новую ловушку для обнаружения несанкционированного доступа.</p>
+      </motion.div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Card className="border-primary/20">
-          <CardHeader className="pb-3">
-            <CardTitle>1. Тип токена</CardTitle>
-            <CardDescription>Выберите, в каком виде будет ловушка.</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="rounded-2xl glass-card overflow-hidden"
+        >
+          <div className="p-5 pb-3">
+            <h2 className="text-base font-bold">1. Тип токена</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Выберите, в каком виде будет ловушка.</p>
+          </div>
+          <div className="p-5 pt-2">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {TOKEN_TYPES.map((t) => {
                 const isSelected = type === t.id;
@@ -111,29 +125,41 @@ export default function CreateToken() {
                     key={t.id}
                     onClick={() => setType(t.id as TokenType)}
                     className={cn(
-                      "cursor-pointer rounded-xl p-3 border-2 transition-all duration-200",
+                      "cursor-pointer rounded-xl p-3 border transition-all duration-300 relative overflow-hidden group",
                       isSelected
-                        ? "border-primary bg-primary/10 shadow-[0_0_12px_rgba(34,197,94,0.12)]"
-                        : "border-border/50 bg-secondary/30 hover:border-primary/50 hover:bg-secondary"
+                        ? "border-primary/50 bg-primary/10 shadow-md shadow-primary/10 scale-[1.02]"
+                        : "border-border/40 bg-secondary/20 hover:border-primary/30 hover:bg-secondary/40 hover:scale-[1.01]"
                     )}
                   >
-                    <t.icon className={cn("w-5 h-5 mb-2", isSelected ? "text-primary" : "text-muted-foreground")} />
-                    <h3 className={cn("font-semibold text-sm mb-0.5", isSelected ? "text-foreground" : "text-muted-foreground")}>{t.name}</h3>
+                    {isSelected && (
+                      <div className={cn("absolute -top-6 -right-6 w-16 h-16 rounded-full bg-gradient-to-br opacity-20 blur-md", t.color)} />
+                    )}
+                    <div className={cn(
+                      "inline-flex p-1.5 rounded-lg mb-2 transition-all duration-300",
+                      isSelected ? `bg-gradient-to-br ${t.color} text-white shadow-sm` : "bg-muted text-muted-foreground group-hover:bg-muted/80"
+                    )}>
+                      <t.icon className="w-4 h-4" />
+                    </div>
+                    <h3 className={cn("font-semibold text-sm mb-0.5 transition-colors", isSelected ? "text-foreground" : "text-muted-foreground")}>{t.name}</h3>
                     <p className="text-[11px] text-muted-foreground leading-snug hidden sm:block">{t.desc}</p>
                   </div>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
 
         {type === TokenType.image && (
-          <Card className="border-primary/20">
-            <CardHeader className="pb-3">
-              <CardTitle>Загрузите изображение</CardTitle>
-              <CardDescription>Это изображение будет отдаваться при открытии URL-ловушки. Любой доступ к нему вызовет срабатывание.</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="rounded-2xl glass-card overflow-hidden"
+          >
+            <div className="p-5 pb-3">
+              <h2 className="text-base font-bold">Загрузите изображение</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">Это изображение будет отдаваться при открытии URL-ловушки.</p>
+            </div>
+            <div className="p-5 pt-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -142,13 +168,13 @@ export default function CreateToken() {
                 className="hidden"
               />
               {imagePreview ? (
-                <div className="relative rounded-xl border-2 border-dashed border-primary/40 p-4 flex flex-col items-center gap-3">
+                <div className="relative rounded-xl border border-primary/30 bg-primary/5 p-4 flex flex-col items-center gap-3">
                   <img src={imagePreview} alt="Превью" className="max-h-48 max-w-full rounded-lg object-contain" />
                   <p className="text-sm text-muted-foreground truncate max-w-full">{imageFile?.name}</p>
                   <button
                     type="button"
                     onClick={removeFile}
-                    className="absolute top-2 right-2 p-1 rounded-full bg-destructive/20 hover:bg-destructive/40 text-destructive transition-colors"
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-destructive/20 hover:bg-destructive/40 text-destructive transition-all duration-200"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -156,26 +182,30 @@ export default function CreateToken() {
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="rounded-xl border-2 border-dashed border-border/60 hover:border-primary/50 p-8 flex flex-col items-center gap-3 cursor-pointer transition-colors"
+                  className="rounded-xl border-2 border-dashed border-border/50 hover:border-primary/40 p-8 flex flex-col items-center gap-3 cursor-pointer transition-all duration-300 hover:bg-primary/5 group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Upload className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-fuchsia-500 flex items-center justify-center text-white shadow-lg shadow-pink-500/20 group-hover:scale-105 transition-transform">
+                    <Upload className="w-6 h-6" />
                   </div>
                   <p className="text-sm font-medium text-foreground">Нажмите, чтобы выбрать файл</p>
                   <p className="text-xs text-muted-foreground">JPG, PNG, GIF, WebP, SVG — до 10 МБ</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
         )}
 
         {type === TokenType.redirect && (
-          <Card className="border-primary/20">
-            <CardHeader className="pb-3">
-              <CardTitle>URL для перенаправления</CardTitle>
-              <CardDescription>Куда перенаправить пользователя после перехода по ловушке. Тревога запишется, а пользователь окажется на этом URL.</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="rounded-2xl glass-card overflow-hidden"
+          >
+            <div className="p-5 pb-3">
+              <h2 className="text-base font-bold">URL для перенаправления</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">Куда перенаправить пользователя после перехода по ловушке.</p>
+            </div>
+            <div className="p-5 pt-2">
               <Input
                 type="url"
                 placeholder="https://www.example.com"
@@ -183,16 +213,21 @@ export default function CreateToken() {
                 onChange={(e) => setRedirectUrl(e.target.value)}
                 required
               />
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
         )}
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>{(type === TokenType.image || type === TokenType.redirect) ? "3" : "2"}. Данные токена</CardTitle>
-            <CardDescription>Укажите название и напоминание — чтобы потом понять, что это и где стоит.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="rounded-2xl glass-card overflow-hidden"
+        >
+          <div className="p-5 pb-3">
+            <h2 className="text-base font-bold">{(type === TokenType.image || type === TokenType.redirect) ? "3" : "2"}. Данные токена</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Укажите название и напоминание — чтобы потом понять, что это и где стоит.</p>
+          </div>
+          <div className="p-5 pt-2 space-y-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Название <span className="text-destructive">*</span></label>
               <Input
@@ -221,14 +256,20 @@ export default function CreateToken() {
               />
               <p className="text-xs text-muted-foreground">Письмо придёт мгновенно когда токен сработает.</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
 
-        <div className="flex justify-end gap-3">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="flex justify-end gap-3 pt-2"
+        >
           <Button
             type="button"
             variant="ghost"
             onClick={() => setLocation("/")}
+            className="rounded-xl"
           >
             Отмена
           </Button>
@@ -236,15 +277,15 @@ export default function CreateToken() {
             type="submit"
             size="lg"
             disabled={!name || !memo || isSubmitting || (type === TokenType.image && !imageFile) || (type === TokenType.redirect && !redirectUrl)}
-            className="font-bold tracking-wide"
+            className="font-bold tracking-wide rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 hover:-translate-y-0.5 border-0"
           >
             {isSubmitting ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Создание…</>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Создание...</>
             ) : (
               "Создать токен"
             )}
           </Button>
-        </div>
+        </motion.div>
       </form>
     </div>
   );

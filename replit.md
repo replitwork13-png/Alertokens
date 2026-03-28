@@ -68,11 +68,14 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 ### `artifacts/canarytokens` (`@workspace/canarytokens`)
 
-React + Vite frontend for the Canarytokens app. Dark security-themed UI.
+React + Vite frontend for the Alertokens app. Glassmorphism UI with purple/blue gradient accents.
 
 - Pages: Dashboard (command center), Create Token, Token Details
 - Uses React Query hooks from `@workspace/api-client-react`
-- Dark mode green-accented security terminal aesthetic
+- Design: glassmorphism cards (backdrop-blur + translucent bg), purple/blue gradient buttons/icons, animated floating orbs background, framer-motion page transitions
+- Light/dark theme with toggle (localStorage persistence, anti-flash script)
+- Color scheme: purple primary (#7c3aed), gradient accents (purple→blue), rose for alerts
+- All UI labels in Russian
 - Supports token types: web, dns, email, pdf, word, qr_code, image, credit_card, redirect
 
 ### `lib/db` (`@workspace/db`)

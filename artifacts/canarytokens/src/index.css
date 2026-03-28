@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -44,79 +44,56 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ── Light theme ── */
 :root,
 .light {
   color-scheme: light;
-
-  --background: 0 0% 97%;
-  --foreground: 240 10% 10%;
-
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 10%;
-
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 10%;
-
-  --primary: 142 71% 36%;
+  --background: 230 25% 95%;
+  --foreground: 230 25% 10%;
+  --card: 0 0% 100% / 0.55;
+  --card-foreground: 230 25% 10%;
+  --popover: 0 0% 100% / 0.7;
+  --popover-foreground: 230 25% 10%;
+  --primary: 265 90% 60%;
   --primary-foreground: 0 0% 100%;
-
-  --secondary: 240 5% 92%;
-  --secondary-foreground: 240 10% 20%;
-
-  --muted: 240 5% 92%;
-  --muted-foreground: 240 5% 45%;
-
-  --accent: 240 5% 92%;
-  --accent-foreground: 240 10% 20%;
-
+  --secondary: 230 20% 90% / 0.6;
+  --secondary-foreground: 230 25% 18%;
+  --muted: 230 15% 90%;
+  --muted-foreground: 230 10% 45%;
+  --accent: 265 50% 92% / 0.5;
+  --accent-foreground: 265 60% 30%;
   --destructive: 0 84% 55%;
   --destructive-foreground: 0 0% 100%;
-
   --warning: 38 92% 45%;
   --warning-foreground: 48 96% 10%;
-
-  --border: 240 5% 84%;
-  --input: 240 5% 88%;
-  --ring: 142 71% 36%;
-
-  --radius: 0.5rem;
+  --border: 230 20% 82% / 0.6;
+  --input: 230 15% 88%;
+  --ring: 265 90% 60%;
+  --radius: 0.75rem;
 }
 
-/* ── Dark theme ── */
 .dark {
   color-scheme: dark;
-
-  --background: 240 10% 4%;
-  --foreground: 0 0% 98%;
-
-  --card: 240 10% 6%;
-  --card-foreground: 0 0% 98%;
-
-  --popover: 240 10% 6%;
-  --popover-foreground: 0 0% 98%;
-
-  --primary: 142 71% 45%;
-  --primary-foreground: 144 100% 10%;
-
-  --secondary: 240 5% 15%;
-  --secondary-foreground: 0 0% 98%;
-
-  --muted: 240 5% 15%;
-  --muted-foreground: 240 5% 65%;
-
-  --accent: 240 5% 15%;
-  --accent-foreground: 0 0% 98%;
-
+  --background: 240 20% 4%;
+  --foreground: 0 0% 95%;
+  --card: 240 15% 10% / 0.45;
+  --card-foreground: 0 0% 95%;
+  --popover: 240 15% 10% / 0.7;
+  --popover-foreground: 0 0% 95%;
+  --primary: 265 90% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 10% 16% / 0.5;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 240 10% 16%;
+  --muted-foreground: 240 5% 60%;
+  --accent: 265 40% 20% / 0.4;
+  --accent-foreground: 265 80% 80%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-
   --warning: 38 92% 50%;
   --warning-foreground: 48 96% 10%;
-
-  --border: 240 5% 15%;
-  --input: 240 5% 15%;
-  --ring: 142 71% 45%;
+  --border: 240 10% 18% / 0.5;
+  --input: 240 10% 16%;
+  --ring: 265 90% 65%;
 }
 
 @layer base {
@@ -125,24 +102,90 @@
   }
   body {
     @apply font-sans antialiased bg-background text-foreground selection:bg-primary/30 selection:text-primary;
+    min-height: 100vh;
   }
   .dark body {
-    background-image:
-      radial-gradient(circle at 50% 0%, hsl(142 71% 45% / 0.05) 0%, transparent 50%),
-      linear-gradient(to right, hsl(240 5% 15% / 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(240 5% 15% / 0.1) 1px, transparent 1px);
-    background-size: 100% 100%, 40px 40px, 40px 40px;
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d0620 25%, #0a0a1a 50%, #06101a 75%, #0a0a1a 100%);
     background-attachment: fixed;
   }
   .light body {
-    background-image: radial-gradient(circle at 50% 0%, hsl(142 71% 36% / 0.06) 0%, transparent 60%);
+    background: linear-gradient(135deg, #e8e0f0 0%, #dde4f0 25%, #e0e8f4 50%, #e4ddf0 75%, #e8e0f0 100%);
     background-attachment: fixed;
   }
 }
 
-.glass-panel {
-  @apply bg-card/60 backdrop-blur-md border border-border/50 shadow-2xl;
+.glass-card {
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid hsl(var(--border));
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
+.dark .glass-card {
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(265 90% 65% / 0.5), hsl(200 90% 60% / 0.3), hsl(265 90% 65% / 0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glow-primary {
+  box-shadow: 0 0 20px hsl(265 90% 65% / 0.15), 0 0 60px hsl(265 90% 65% / 0.05);
+}
+.dark .glow-primary {
+  box-shadow: 0 0 20px hsl(265 90% 65% / 0.25), 0 0 60px hsl(265 90% 65% / 0.1);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(1deg); }
+  66% { transform: translateY(4px) rotate(-1deg); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes orb-move {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-20px, 15px) scale(0.95); }
+  75% { transform: translate(15px, 25px) scale(1.02); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+.animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+.animate-orb { animation: orb-move 12s ease-in-out infinite; }
 
 .terminal-text {
   @apply font-mono tracking-tight;
