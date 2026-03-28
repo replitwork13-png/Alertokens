@@ -111,7 +111,7 @@ export default function Dashboard() {
       <div>
         <h2 className="text-lg font-bold tracking-tight mb-3 flex items-center gap-2">
           <Network className="w-5 h-5 text-primary" />
-          Развёрнутые токены
+          Мои токены
         </h2>
 
         {tokensLoading ? (
@@ -140,64 +140,67 @@ export default function Dashboard() {
           >
             {tokensData?.tokens?.map((token) => (
               <motion.div variants={item} key={token.id}>
-                <Card className={cn(
-                  "hover:border-primary/50 transition-colors group cursor-pointer relative overflow-hidden",
-                  token.triggered ? "border-destructive/40 bg-destructive/5" : "border-border/50"
-                )}>
-                  {token.triggered && (
-                    <div className="absolute top-0 inset-x-0 h-0.5 bg-destructive" />
-                  )}
-                  <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                        <Badge variant="outline" className="uppercase text-[10px] tracking-widest gap-1 border-primary/30 text-primary">
-                          {getTokenIcon(token.type)}
-                          {TOKEN_TYPE_LABELS[token.type] ?? token.type}
-                        </Badge>
-                        {token.triggered && (
-                          <Badge variant="destructive" className="animate-pulse text-[10px]">
-                            СРАБОТАЛ
+                <Link href={`/token/${token.id}`} className="block">
+                  <Card className={cn(
+                    "hover:border-primary/50 transition-colors group cursor-pointer relative overflow-hidden",
+                    token.triggered ? "border-destructive/40 bg-destructive/5" : "border-border/50"
+                  )}>
+                    {token.triggered && (
+                      <div className="absolute top-0 inset-x-0 h-0.5 bg-destructive" />
+                    )}
+                    <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <Badge variant="outline" className="uppercase text-[10px] tracking-widest gap-1 border-primary/30 text-primary">
+                            {getTokenIcon(token.type)}
+                            {TOKEN_TYPE_LABELS[token.type] ?? token.type}
                           </Badge>
-                        )}
+                          {token.triggered && (
+                            <Badge variant="destructive" className="animate-pulse text-[10px]">
+                              СРАБОТАЛ
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="truncate group-hover:text-primary transition-colors text-base">
+                          {token.name}
+                        </CardTitle>
                       </div>
-                      <CardTitle className="truncate group-hover:text-primary transition-colors text-base">
-                        <Link href={`/token/${token.id}`}>{token.name}</Link>
-                      </CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3 h-10">
-                      {token.memo || "Без описания."}
-                    </p>
-                    <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Activity className="w-3 h-3" />
-                        {token.triggerCount} срабат.
+                    </CardHeader>
+                    <CardContent className="pb-3">
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3 h-10">
+                        {token.memo || "Без описания."}
+                      </p>
+                      <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Activity className="w-3 h-3" />
+                          {token.triggerCount} срабат.
+                        </span>
+                        <span>
+                          {token.lastTriggeredAt
+                            ? formatDistanceToNow(parseISO(token.lastTriggeredAt), { addSuffix: true, locale: ru })
+                            : "Не срабатывал"}
+                        </span>
+                      </div>
+                    </CardContent>
+                    <div className="px-4 py-2.5 bg-secondary/50 border-t border-border/50 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1 text-xs"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          copy(token.triggerUrl, "URL скопирован");
+                        }}
+                      >
+                        <Copy className="w-3 h-3" /> Копировать URL
+                      </Button>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        Детали <ExternalLink className="w-3 h-3" />
                       </span>
-                      <span>
-                        {token.lastTriggeredAt
-                          ? formatDistanceToNow(parseISO(token.lastTriggeredAt), { addSuffix: true, locale: ru })
-                          : "Не срабатывал"}
-                      </span>
                     </div>
-                  </CardContent>
-                  <div className="px-4 py-2.5 bg-secondary/50 border-t border-border/50 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 gap-1 text-xs"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        copy(token.triggerUrl, "URL скопирован");
-                      }}
-                    >
-                      <Copy className="w-3 h-3" /> Копировать URL
-                    </Button>
-                    <Link href={`/token/${token.id}`} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                      Детали <ExternalLink className="w-3 h-3" />
-                    </Link>
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
               </motion.div>
             ))}
           </motion.div>
