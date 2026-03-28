@@ -1,10 +1,12 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Shield, LayoutDashboard, PlusCircle, Activity } from "lucide-react";
+import { Shield, LayoutDashboard, PlusCircle, Activity, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/theme-context";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const { theme, toggle } = useTheme();
 
   const navItems = [
     { href: "/", label: "Главная", icon: LayoutDashboard },
@@ -49,10 +51,19 @@ export function Layout({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          {/* Status indicator */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Activity className="w-3.5 h-3.5 text-primary animate-pulse" />
-            <span className="hidden md:inline">Система активна</span>
+          {/* Right side: status + theme toggle */}
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Activity className="w-3.5 h-3.5 text-primary animate-pulse" />
+              <span>Система активна</span>
+            </div>
+            <button
+              onClick={toggle}
+              aria-label="Переключить тему"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border/60 bg-secondary hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </header>

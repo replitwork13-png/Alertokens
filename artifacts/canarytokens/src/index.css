@@ -44,9 +44,49 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-:root {
-  /* Enforce Dark Mode for the Security Theme */
+/* ── Light theme ── */
+:root,
+.light {
+  color-scheme: light;
+
+  --background: 0 0% 97%;
+  --foreground: 240 10% 10%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 10%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 10%;
+
+  --primary: 142 71% 36%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 240 5% 92%;
+  --secondary-foreground: 240 10% 20%;
+
+  --muted: 240 5% 92%;
+  --muted-foreground: 240 5% 45%;
+
+  --accent: 240 5% 92%;
+  --accent-foreground: 240 10% 20%;
+
+  --destructive: 0 84% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --warning: 38 92% 45%;
+  --warning-foreground: 48 96% 10%;
+
+  --border: 240 5% 84%;
+  --input: 240 5% 88%;
+  --ring: 142 71% 36%;
+
+  --radius: 0.5rem;
+}
+
+/* ── Dark theme ── */
+.dark {
   color-scheme: dark;
+
   --background: 240 10% 4%;
   --foreground: 0 0% 98%;
 
@@ -56,7 +96,6 @@
   --popover: 240 10% 6%;
   --popover-foreground: 0 0% 98%;
 
-  /* Terminal Green */
   --primary: 142 71% 45%;
   --primary-foreground: 144 100% 10%;
 
@@ -71,15 +110,13 @@
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  
+
   --warning: 38 92% 50%;
   --warning-foreground: 48 96% 10%;
 
   --border: 240 5% 15%;
   --input: 240 5% 15%;
   --ring: 142 71% 45%;
-
-  --radius: 0.5rem;
 }
 
 @layer base {
@@ -88,17 +125,23 @@
   }
   body {
     @apply font-sans antialiased bg-background text-foreground selection:bg-primary/30 selection:text-primary;
-    background-image: 
+  }
+  .dark body {
+    background-image:
       radial-gradient(circle at 50% 0%, hsl(142 71% 45% / 0.05) 0%, transparent 50%),
       linear-gradient(to right, hsl(240 5% 15% / 0.1) 1px, transparent 1px),
       linear-gradient(to bottom, hsl(240 5% 15% / 0.1) 1px, transparent 1px);
     background-size: 100% 100%, 40px 40px, 40px 40px;
     background-attachment: fixed;
   }
+  .light body {
+    background-image: radial-gradient(circle at 50% 0%, hsl(142 71% 36% / 0.06) 0%, transparent 60%);
+    background-attachment: fixed;
+  }
 }
 
 .glass-panel {
-  @apply bg-card/60 backdrop-blur-md border border-white/10 shadow-2xl;
+  @apply bg-card/60 backdrop-blur-md border border-border/50 shadow-2xl;
 }
 
 .terminal-text {
