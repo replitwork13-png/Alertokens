@@ -201,7 +201,7 @@ router.get("/:tokenId", async (req: Request, res: Response) => {
 
 router.post("/:tokenId/test-trigger", async (req: Request, res: Response) => {
   try {
-    const tokenId = req.params.tokenId;
+    const tokenId = req.params.tokenId as string;
     const token = await db.select().from(tokensTable).where(eq(tokensTable.id, tokenId)).limit(1);
     if (!token.length) {
       res.status(404).json({ error: "not_found", message: "Token not found" });
@@ -241,7 +241,7 @@ router.post("/:tokenId/test-trigger", async (req: Request, res: Response) => {
 
 router.get("/:tokenId/download-pdf", async (req: Request, res: Response) => {
   try {
-    const tokenId = req.params.tokenId;
+    const tokenId = req.params.tokenId as string;
     const token = await db.select().from(tokensTable).where(eq(tokensTable.id, tokenId)).limit(1);
     if (!token.length) {
       res.status(404).json({ error: "not_found", message: "Token not found" });
@@ -317,14 +317,14 @@ router.get("/:tokenId/download-pdf", async (req: Request, res: Response) => {
       },
     });
     const annotRef = pdfDoc.context.register(annot);
-    page.node.set(pdfDoc.context.obj("Annots" as any), pdfDoc.context.obj([annotRef]));
+    page.node.set(pdfDoc.context.obj("Annots" as any) as any, pdfDoc.context.obj([annotRef]) as any);
 
     // Also set OpenAction to fetch the URL when the PDF is opened
     const openAction = pdfDoc.context.obj({
       S: "URI",
       URI: triggerUrl,
     });
-    pdfDoc.catalog.set(pdfDoc.context.obj("OpenAction" as any), openAction);
+    pdfDoc.catalog.set(pdfDoc.context.obj("OpenAction" as any) as any, openAction as any);
 
     const pdfBytes = await pdfDoc.save();
 
@@ -341,7 +341,7 @@ router.get("/:tokenId/download-pdf", async (req: Request, res: Response) => {
 
 router.post("/:tokenId/upload-image", upload.single("image"), async (req: Request, res: Response) => {
   try {
-    const tokenId = req.params.tokenId;
+    const tokenId = req.params.tokenId as string;
     if (!req.file) {
       res.status(400).json({ error: "validation_error", message: "No image file provided" });
       return;
@@ -373,7 +373,7 @@ router.post("/:tokenId/upload-image", upload.single("image"), async (req: Reques
 
 router.get("/:tokenId/image", async (req: Request, res: Response) => {
   try {
-    const tokenId = req.params.tokenId;
+    const tokenId = req.params.tokenId as string;
     const token = await db.select().from(tokensTable).where(eq(tokensTable.id, tokenId)).limit(1);
     if (!token.length || !token[0].imagePath) {
       res.status(404).json({ error: "not_found", message: "Image not found" });

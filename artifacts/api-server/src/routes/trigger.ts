@@ -47,7 +47,7 @@ async function fetchGeoData(ip: string): Promise<GeoData | null> {
 }
 
 router.get("/:token", async (req: Request, res: Response) => {
-  const { token } = req.params;
+  const { token } = req.params as { token: string };
   const referer = (req.query.ref as string) || req.headers.referer || null;
   const userAgent = req.headers["user-agent"] || null;
   const ipAddress =
