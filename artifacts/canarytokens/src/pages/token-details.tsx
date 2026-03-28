@@ -515,29 +515,19 @@ export default function TokenDetails() {
         </Card>
       )}
 
-      {/* QR Code */}
-      {qrDataUrl && (
-        <Card className={cn(isQrType && "border-primary/30 shadow-lg")}>
+      {/* QR Code — only for qr_code type */}
+      {qrDataUrl && isQrType && (
+        <Card className="border-primary/30 shadow-lg">
           <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
-            {isQrType && (
-              <>
-                <div className="bg-primary/20 p-3 rounded-full">
-                  <QrCode className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">QR-код токен активен!</h3>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Используйте этот QR-код для защиты физических объектов или документов.
-                  </p>
-                </div>
-              </>
-            )}
-            {!isQrType && (
-              <CardTitle className="text-lg flex items-center gap-2 self-start">
-                <QrCode className="w-5 h-5 text-primary" />
-                QR-код
-              </CardTitle>
-            )}
+            <div className="bg-primary/20 p-3 rounded-full">
+              <QrCode className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">QR-код токен активен!</h3>
+              <p className="text-muted-foreground text-sm mt-1">
+                Используйте этот QR-код для защиты физических объектов или документов.
+              </p>
+            </div>
             <div className="bg-white p-4 rounded-xl inline-block">
               <img src={qrDataUrl} alt="QR-код для токена" className="w-[200px] h-[200px]" />
             </div>
