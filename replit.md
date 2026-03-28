@@ -81,6 +81,25 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 - **Theme**: Light/dark toggle, localStorage-persisted, anti-flash script in index.html
 - **Language**: All UI labels in Russian
 
+### `artifacts/nextjs` (`@workspace/nextjs`)
+
+**Full-stack Next.js 15 app** for the Alertokens honeypot tool. Designed for Vercel deployment with a real PostgreSQL database (Supabase) and email alerts via Resend. Unlike the static canarytokens app, this one tracks all token triggers server-side and sends real email notifications.
+
+- **Architecture**: Next.js 15 App Router with Server Components + Client Components
+- **Database**: PostgreSQL via Drizzle ORM — same `DATABASE_URL` as the workspace, tables: `tokens`, `alerts`
+- **Email**: Resend API (`RESEND_API_KEY`) — sends alert emails when tokens are triggered
+- **Design**: Glassmorphism dark theme, purple/violet primary color, framer-motion animations, Russian UI
+- **Routing**: App Router — `/` (dashboard), `/tokens/new` (create), `/tokens/[id]` (details), `/faq`
+- **API routes**:
+  - `GET/POST /api/tokens` — list and create tokens
+  - `GET/DELETE /api/tokens/[id]` — get and delete token
+  - `GET /api/tokens/[id]/alerts` — list alerts for a token
+  - `GET /api/trigger/[token]` — honeypot trigger: records IP/user-agent/referer, sends email, returns 1×1 PNG or 302 redirect
+- **Token types**: web (pixel), redirect, dns, smtp, pdf, word, excel, image, creditcard
+- **Schema**: `artifacts/nextjs/lib/schema.ts` — `tokensTable` + `alertsTable`
+- **Vercel deployment**: Set `Root Directory = artifacts/nextjs`, env vars: `DATABASE_URL` (Supabase) + `RESEND_API_KEY`
+- **Dev port**: 3001 (set via `PORT:-3001` in dev script)
+
 ### `lib/db` (`@workspace/db`)
 
 Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
