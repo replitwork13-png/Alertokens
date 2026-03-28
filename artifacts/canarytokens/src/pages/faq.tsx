@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, ChevronDown, Shield, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, CreditCard, ExternalLink, Bell, Eye, Lock } from "lucide-react";
+import { HelpCircle, ChevronDown, Shield, Network, Globe, Mail, FileText, QrCode, Image as ImageIcon, CreditCard, ExternalLink, Bell, Eye, Lock, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FaqItem {
@@ -198,6 +198,28 @@ export default function Faq() {
           </motion.div>
         );
       })}
+
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+        className="rounded-2xl glass-card p-6 md:p-8 text-center space-y-4"
+      >
+        <div className="inline-flex p-3 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/20">
+          <Send className="w-6 h-6" />
+        </div>
+        <h3 className="text-lg font-bold">Не нашли ответ?</h3>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          Свяжитесь с нашей техподдержкой — мы поможем разобраться с любым вопросом.
+        </p>
+        <a
+          href="mailto:info@premiumwebsite.ru"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold text-sm shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02]"
+        >
+          <Mail className="w-4 h-4" />
+          info@premiumwebsite.ru
+        </a>
+      </motion.div>
     </div>
   );
 }
