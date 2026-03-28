@@ -1,6 +1,6 @@
-import { useStore } from "@/contexts/store-context";
-import { Badge, Button } from "@/components/ui-components";
-import { AlertTriangle, ShieldCheck, Copy, ExternalLink, Activity, Network, FileText, Mail, QrCode, Image as ImageIcon, Globe, PlusCircle, CreditCard, Zap, TrendingUp } from "lucide-react";
+import { useListTokens, useGetStats } from "@workspace/api-client-react";
+import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "@/components/ui-components";
+import { AlertTriangle, ShieldCheck, Copy, ExternalLink, Activity, Network, FileText, Mail, QrCode, Image as ImageIcon, Globe, PlusCircle, CreditCard, ExternalLink as RedirectIcon, Zap, TrendingUp } from "lucide-react";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Link } from "wouter";
@@ -18,7 +18,7 @@ const getTokenIcon = (type: string) => {
     case 'qr_code': return <QrCode className="w-4 h-4" />;
     case 'image': return <ImageIcon className="w-4 h-4" />;
     case 'credit_card': return <CreditCard className="w-4 h-4" />;
-    case 'redirect': return <ExternalLink className="w-4 h-4" />;
+    case 'redirect': return <RedirectIcon className="w-4 h-4" />;
     default: return <Activity className="w-4 h-4" />;
   }
 };
@@ -36,12 +36,9 @@ const TOKEN_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function Dashboard() {
-  const { tokens, alerts } = useStore();
+  const { data: stats, isLoading: statsLoading } = useGetStats();
+  const { data: tokensData, isLoading: tokensLoading } = useListTokens({ page: 1, limit: 100 });
   const { copy } = useCopy();
-
-  const totalTokens = tokens.length;
-  const triggeredTokens = tokens.filter(t => t.triggered).length;
-  const totalAlerts = alerts.length;
 
   const container = {
     hidden: { opacity: 0 },
@@ -50,18 +47,36 @@ export default function Dashboard() {
 
   const item = {
     hidden: { opacity: 0, y: 20, scale: 0.97 },
-    show: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { type: "spring" as const, stiffness: 300, damping: 24 }
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1, 
+      transition: { type: "spring" as const, stiffness: 300, damping: 24 } 
     }
   };
 
   const statsCards = [
-    { label: "Активных", value: totalTokens, icon: ShieldCheck, gradient: "from-emerald-500 to-teal-600", glow: "shadow-emerald-500/20" },
-    { label: "Сработало", value: triggeredTokens, icon: Zap, gradient: "from-rose-500 to-pink-600", glow: "shadow-rose-500/20" },
-    { label: "Записей", value: totalAlerts, icon: TrendingUp, gradient: "from-violet-500 to-purple-600", glow: "shadow-violet-500/20" },
+    {
+      label: "Активных",
+      value: stats?.totalTokens ?? 0,
+      icon: ShieldCheck,
+      gradient: "from-emerald-500 to-teal-600",
+      glow: "shadow-emerald-500/20",
+    },
+    {
+      label: "Сработало",
+      value: stats?.triggeredTokens ?? 0,
+      icon: Zap,
+      gradient: "from-rose-500 to-pink-600",
+      glow: "shadow-rose-500/20",
+    },
+    {
+      label: "Тревог",
+      value: stats?.totalAlerts ?? 0,
+      icon: TrendingUp,
+      gradient: "from-violet-500 to-purple-600",
+      glow: "shadow-violet-500/20",
+    },
   ];
 
   return (
@@ -73,7 +88,9 @@ export default function Dashboard() {
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
       >
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">Панель управления</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+            Панель управления
+          </h1>
           <p className="text-muted-foreground mt-1 text-sm">Мониторинг и управление активными токенами-ловушками.</p>
         </div>
         <Link
@@ -91,14 +108,21 @@ export default function Dashboard() {
         transition={{ duration: 0.5, delay: 0.1 }}
         className="grid grid-cols-3 gap-3 md:gap-5"
       >
-        {statsCards.map((s) => (
-          <div key={s.label} className={cn("relative overflow-hidden rounded-2xl glass-card p-4 md:p-5 group transition-all duration-500 hover:scale-[1.02]", `shadow-lg ${s.glow}`)}>
+        {statsCards.map((s, i) => (
+          <div
+            key={s.label}
+            className={cn("relative overflow-hidden rounded-2xl glass-card p-4 md:p-5 group transition-all duration-500 hover:scale-[1.02]", `shadow-lg ${s.glow}`)}
+          >
             <div className={cn("absolute -top-4 -right-4 w-20 h-20 rounded-full bg-gradient-to-br opacity-15 group-hover:opacity-25 transition-opacity duration-500 blur-md", s.gradient)} />
             <div className={cn("inline-flex p-2 rounded-xl bg-gradient-to-br text-white mb-3 shadow-md", s.gradient)}>
               <s.icon className="w-4 h-4" />
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{s.label}</p>
-            <p className="text-3xl md:text-4xl font-extrabold mt-1 tracking-tight">{s.value}</p>
+            <p className="text-3xl md:text-4xl font-extrabold mt-1 tracking-tight">
+              {statsLoading ? (
+                <span className="inline-block w-12 h-8 rounded-lg bg-muted animate-pulse" />
+              ) : s.value}
+            </p>
           </div>
         ))}
       </motion.div>
@@ -114,7 +138,13 @@ export default function Dashboard() {
           Мои токены
         </motion.h2>
 
-        {tokens.length === 0 ? (
+        {tokensLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-40 rounded-2xl bg-card/30 animate-pulse glass-card" />
+            ))}
+          </div>
+        ) : tokensData?.tokens?.length === 0 ? (
           <div className="rounded-2xl glass-card p-10 flex flex-col items-center justify-center text-center border border-dashed border-primary/20">
             <ShieldCheck className="w-14 h-14 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-semibold">Нет активных токенов</h3>
@@ -132,7 +162,7 @@ export default function Dashboard() {
             animate="show"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {tokens.map((token) => (
+            {tokensData?.tokens?.map((token) => (
               <motion.div variants={item} key={token.id}>
                 <Link href={`/token/${token.id}`} className="block group">
                   <div className={cn(

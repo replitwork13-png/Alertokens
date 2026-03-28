@@ -1,15 +1,23 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { useHashLocation } from "wouter/use-hash-location";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
 import { ThemeProvider } from "@/contexts/theme-context";
-import { StoreProvider } from "@/contexts/store-context";
 import Dashboard from "@/pages/dashboard";
 import CreateToken from "@/pages/create-token";
 import TokenDetails from "@/pages/token-details";
-import Faq from "@/pages/faq";
 import NotFound from "@/pages/not-found";
+import Faq from "@/pages/faq";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function Router() {
   return (
@@ -28,14 +36,14 @@ function Router() {
 function App() {
   return (
     <ThemeProvider>
-      <StoreProvider>
+      <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <WouterRouter hook={useHashLocation}>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <Router />
           </WouterRouter>
           <Toaster />
         </TooltipProvider>
-      </StoreProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }
